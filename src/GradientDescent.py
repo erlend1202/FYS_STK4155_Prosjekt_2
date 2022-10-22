@@ -32,6 +32,7 @@ def gradient_descent(x,y,iterations = 1000, lr = 0.01, threshold = 0.000001, mom
         bias -= change_bias
 
     print(f"stopped after {i} iterations")
+    print("MSE: ",MSE(y,yp))
     
     plt.scatter(x,y)
     plt.plot(x,yp)
@@ -46,7 +47,50 @@ y = 4+3*x+np.random.randn(n,1)
 gradient_descent(x,y, lr=0.35, momentum=0.5)
 
 
-#def StocastichGD()
+def StocastichGD(x,y,iterations = 1000, lr = 0.01, threshold = 0.000001, momentum=0.1, M=5):
+    n = len(x)
+    w = np.random.random()
+    bias = 0.01
+    m = int(n/M) #number of minibatches
+    previous_cost = None 
+    change_w = 0
+    change_bias = 0
+    for i in range(iterations):
+        for j in range(m):
+            k = np.random.randint(m)
+            idx_low = int(100/5 * k)
+            idx_high = int(100/5 * (k+1))
+            
+            new_x = x[idx_low:idx_high]
+            new_y = y[idx_low:idx_high]
+            yp = w*new_x + bias 
+            #cost = MSE(new_y,yp)
+
+            #if previous_cost and abs(previous_cost-cost)<=threshold:
+            #    break
+
+            #previous_cost = cost 
+
+            dw = -(2/n) * np.sum(new_x * (new_y-yp))
+            dbias = -(2/n) * np.sum((new_y-yp))
+
+            change_w = lr*dw + momentum*change_w
+            change_bias = lr*dbias + momentum*change_bias
+
+            w -= change_w
+            bias -= change_bias
+
+    #print(f"stopped after {i} iterations")
+    
+    yp = w*x + bias 
+    print("MSE: ",MSE(y,yp))
+
+    plt.scatter(x,y)
+    plt.plot(x,yp)
+    plt.show()
+
+StocastichGD(x,y,lr=0.35,momentum=0.5)
+
 
 
 
