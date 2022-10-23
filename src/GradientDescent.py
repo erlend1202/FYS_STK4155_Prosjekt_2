@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 def MSE(y,yp):
     return np.sum((y- yp)**2)/len(y)
 
-#Egen kode for GD, tror denne er riktig
+#Simple Gradient descent with momentum
 def gradient_descent(x,y,iterations = 1000, lr = 0.01, threshold = 0.000001, momentum=0.1):
     n = len(x)
     w = np.random.random()
@@ -44,10 +44,17 @@ np.random.seed(4)
 x = 2*np.random.rand(n,1)
 y = 4+3*x+np.random.randn(n,1)
 
-gradient_descent(x,y, lr=0.35, momentum=0.5)
+#gradient_descent(x,y, lr=0.35, momentum=0.5)
+"""
+Stops after 27 iterations, which seems to be the best for this certain data set.
+This is for the specific seed, and could vary
+"""
 
+#Method for a varying step length/learning rate
+def step_length(t,t0,t1):
+    return t0/(t+t1)
 
-def StocastichGD(x,y,iterations = 1000, lr = 0.01, threshold = 0.000001, momentum=0.1, M=5):
+def StocastichGD(x,y,iterations = 1000, t0 = 30, t1=10, threshold = 0.000001, momentum=0.1, M=5):
     n = len(x)
     w = np.random.random()
     bias = 0.01
@@ -55,33 +62,43 @@ def StocastichGD(x,y,iterations = 1000, lr = 0.01, threshold = 0.000001, momentu
     previous_cost = None 
     change_w = 0
     change_bias = 0
+
+    stop_loop = False
+    num_iters = iterations
     for i in range(iterations):
+        if stop_loop:
+            break
         for j in range(m):
             k = np.random.randint(m)
-            idx_low = int(100/5 * k)
-            idx_high = int(100/5 * (k+1))
+            idx_low = int(n/m * k)
+            idx_high = int(n/m * (k+1))
             
             new_x = x[idx_low:idx_high]
             new_y = y[idx_low:idx_high]
+
             yp = w*new_x + bias 
-            #cost = MSE(new_y,yp)
 
-            #if previous_cost and abs(previous_cost-cost)<=threshold:
-            #    break
+            cost = MSE(new_y,yp)*m
 
-            #previous_cost = cost 
+            if previous_cost and abs(previous_cost-cost)<=threshold:
+                num_iters = i
+                stop_loop = True
+                break
+
+            previous_cost = cost 
 
             dw = -(2/n) * np.sum(new_x * (new_y-yp))
             dbias = -(2/n) * np.sum((new_y-yp))
 
+            t = i*m + j 
+            lr = step_length(t,t0,t1)
             change_w = lr*dw + momentum*change_w
             change_bias = lr*dbias + momentum*change_bias
 
             w -= change_w
             bias -= change_bias
 
-    #print(f"stopped after {i} iterations")
-    
+    print(f"stopped after {num_iters} iterations")
     yp = w*x + bias 
     print("MSE: ",MSE(y,yp))
 
@@ -89,7 +106,15 @@ def StocastichGD(x,y,iterations = 1000, lr = 0.01, threshold = 0.000001, momentu
     plt.plot(x,yp)
     plt.show()
 
-StocastichGD(x,y,lr=0.35,momentum=0.5)
+
+n = 100
+np.random.seed(4) #Place seed here aswell for more accurate results
+x = 2*np.random.rand(n,1)
+y = 4+3*x+np.random.randn(n,1)
+StocastichGD(x,y,momentum=0.5)
+
+
+
 
 
 
@@ -101,7 +126,7 @@ def objective(x):
 # derivative of objective function
 def derivative(x):
     return x * 2.0 
- 
+
 # gradient descent algorithm with momentum
 def gradient_descentMomentum(objective, derivative, bounds, n_iter, step_size, momentum):
     # track all solutions
