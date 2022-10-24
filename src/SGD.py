@@ -1,0 +1,255 @@
+# Using Autograd to calculate gradients for OLS
+from random import random, seed
+import numpy as np
+import autograd.numpy as np
+import matplotlib.pyplot as plt
+from autograd import grad
+
+def CostOLS(beta,y,X):
+    n = len(y)
+    return (1.0/n)*np.sum((y-X @ beta)**2)
+
+def learning_schedule(t):
+    return t0/(t+t1)
+
+def GD(x,y,Niterations, momentum, plot=True):
+    n = len(x)
+    X = np.c_[np.ones((n,1)), x]
+    XT_X = X.T @ X
+
+    theta = np.random.randn(2,1)
+    eta = 0.1
+    # define the gradient
+    training_gradient = grad(CostOLS)
+    change = 0
+    for iter in range(Niterations):
+        gradients = training_gradient(theta,y,X) + momentum*change
+        change = eta*gradients
+        theta -= change
+    print("theta from own gd")
+    print(theta)
+
+    xnew = np.array([[0],[2]])
+    Xnew = np.c_[np.ones((2,1)), xnew]
+    ypredict = Xnew.dot(theta)
+
+    if plot:
+        plt.plot(xnew, ypredict, "r-")
+        plt.plot(x, y ,'ro')
+        plt.axis([0,2.0,0, 15.0])
+        plt.xlabel(r'$x$')
+        plt.ylabel(r'$y$')
+        plt.title(r'Random numbers ')
+        plt.show()
+    else:
+        return xnew,ypredict
+
+
+def SGD(x,y,Niterations, momentum, M, plot=True):
+    n = len(x)
+    X = np.c_[np.ones((n,1)), x]
+    XT_X = X.T @ X
+    
+    theta = np.random.randn(2,1)
+    eta = 0.1
+    # define the gradient
+    training_gradient = grad(CostOLS)
+    change = 0
+    m = int(n/M)
+    for iter in range(Niterations):
+        for i in range(m):
+            random_index = np.random.randint(m)*M
+            xi = X[random_index:random_index+M]
+            yi = y[random_index:random_index+M]
+
+            gradients = (1.0/M)*training_gradient(theta,yi,xi) + momentum*change
+            eta = learning_schedule(iter*m+i)
+            change = eta*gradients
+            theta -= change
+    print("theta from own gd")
+    print(theta)
+
+    xnew = np.array([[0],[2]])
+    Xnew = np.c_[np.ones((2,1)), xnew]
+    ypredict = Xnew.dot(theta)
+
+    if plot:
+        plt.plot(xnew, ypredict, "r-")
+        plt.plot(x, y ,'ro')
+        plt.axis([0,2.0,0, 15.0])
+        plt.xlabel(r'$x$')
+        plt.ylabel(r'$y$')
+        plt.title(r'Random numbers ')
+        plt.show()
+    else:
+        return xnew,ypredict
+
+
+
+#Added AdaGrad
+def GD_Tuned(x,y,Niterations, momentum, plot=True):
+    n = len(x)
+    X = np.c_[np.ones((n,1)), x]
+    sh = X.shape[1]
+    XT_X = X.T @ X
+    #theta_linreg = np.linalg.pinv(XT_X) @ (X.T @ y)
+    #print("Own inversion")
+    #print(theta_linreg)
+    
+    theta = np.random.randn(2,1)
+    eta = 0.01
+    # Including AdaGrad parameter to avoid possible division by zero
+    delta  = 1e-8
+    # define the gradient
+    training_gradient = grad(CostOLS)
+    change = 0
+    for iter in range(Niterations):
+        Giter = np.zeros(shape=(sh,sh))
+
+        gradients = training_gradient(theta,y,X) + momentum*change
+        # Calculate the outer product of the gradients
+        Giter +=gradients @ gradients.T
+        # Simpler algorithm with only diagonal elements
+        Ginverse = np.c_[eta/(delta+np.sqrt(np.diagonal(Giter)))]
+
+        # compute update
+        change = np.multiply(Ginverse,gradients)
+        theta -= change
+    print("theta from own gd")
+    print(theta)
+
+    xnew = np.array([[0],[2]])
+    Xnew = np.c_[np.ones((2,1)), xnew]
+    ypredict = Xnew.dot(theta)
+
+    if plot:
+        plt.plot(xnew, ypredict, "r-")
+        plt.plot(x, y ,'ro')
+        plt.axis([0,2.0,0, 15.0])
+        plt.xlabel(r'$x$')
+        plt.ylabel(r'$y$')
+        plt.title(r'Random numbers ')
+        plt.show()
+    else:
+        return xnew,ypredict
+
+#Added AdaGrad
+def SGD_Tuned(x,y,Niterations, momentum, M, plot=True):
+    n = len(x)
+    X = np.c_[np.ones((n,1)), x]
+    sh = X.shape[1]
+    XT_X = X.T @ X
+
+    
+    theta = np.random.randn(2,1)
+    eta = 0.01
+    # Including AdaGrad parameter to avoid possible division by zero
+    delta  = 1e-8
+    # define the gradient
+    training_gradient = grad(CostOLS)
+    change = 0
+    m = int(n/M)
+    for iter in range(Niterations):
+        Giter = np.zeros(shape=(sh,sh))
+        for i in range(m):
+            random_index = np.random.randint(m)*M
+            xi = X[random_index:random_index+M]
+            yi = y[random_index:random_index+M]
+
+            gradients = (1.0/M)*training_gradient(theta,yi,xi) + momentum*change
+            # Calculate the outer product of the gradients
+            Giter +=gradients @ gradients.T
+	        # Simpler algorithm with only diagonal elements
+            Ginverse = np.c_[eta/(delta+np.sqrt(np.diagonal(Giter)))]
+
+            # compute update
+            change = np.multiply(Ginverse,gradients)
+            theta -= change
+    print("theta from own gd")
+    print(theta)
+
+    xnew = np.array([[0],[2]])
+    Xnew = np.c_[np.ones((2,1)), xnew]
+    ypredict = Xnew.dot(theta)
+    #ypredict2 = Xnew.dot(theta_linreg)
+
+    if plot:
+        plt.plot(xnew, ypredict, "r-")
+        #plt.plot(xnew, ypredict2, "b-")
+        plt.plot(x, y ,'ro')
+        plt.axis([0,2.0,0, 15.0])
+        plt.xlabel(r'$x$')
+        plt.ylabel(r'$y$')
+        plt.title(r'Random numbers ')
+        plt.show()
+    else:
+        return xnew,ypredict
+
+
+if __name__ == "__main__":
+    n = 100 
+    np.random.seed(4)
+    x = np.random.rand(n,1)
+    y = 4+3*x+np.random.randn(n,1)
+
+    x_exact = np.linspace(0,2,11)
+    y_exact = 4+3*x_exact
+    #y = 2.0+3*x +4*x*x# +np.random.randn(n,1)
+    t0, t1 = 5, 50
+    #GD(x,y, 1000, 0.1)
+    #SGD(x,y, 200, 0.1, 5)
+    
+    #Task A.3
+    def testSGD():
+        iterations = [10,50,100,200,1000]
+        batch_size = [2,5,10,20,50]
+        momentums = [0.05,0.1, 0.2, 0.4, 0.6]
+        
+        fig = plt.figure()
+        plt.plot(x,y,'ro')
+        plt.plot(x_exact,y_exact, 'k--', label="y_exact", zorder=100)
+        for iter in iterations:
+            xnew, ypred = SGD(x,y, iter, 0.1, 5, False)
+            plt.plot(xnew, ypred, label=f"num_iterations {iter}")
+            plt.legend()
+        plt.savefig("figures/taskA3_iter.png")
+
+
+        fig = plt.figure()
+        plt.plot(x,y,'ro')
+        plt.plot(x_exact,y_exact, 'k--', label="y_exact", zorder=100)
+        for M in batch_size:
+            xnew, ypred = SGD(x,y, 200, 0.1, M, False)
+            plt.plot(xnew, ypred, label=f"batch size {M}")
+            plt.legend()
+        plt.savefig("figures/taskA3_batchsize.png")
+        
+
+        fig = plt.figure()
+        plt.plot(x,y,'ro')
+        plt.plot(x_exact,y_exact, 'k--', label="y_exact", zorder=100)
+        for momentum in momentums:
+            xnew, ypred = SGD(x,y, 200, momentum, 5, False)
+            plt.plot(xnew, ypred, label=f"momentum {momentum}")
+            plt.legend()
+        plt.savefig("figures/taskA3_momentum.png")
+        
+    #testSGD()
+    #Best values: Momentum = 0.1, batch size = 5, iterations = 200-1000 seems suitable enough
+
+    fig, axs = plt.subplots(2,2)
+    functions = [GD, GD_Tuned, SGD, SGD_Tuned]
+    count = 0
+    for i in range(2):
+        for j in range(2):
+            function = functions[count]
+            count += 1
+            if function == SGD or function == SGD_Tuned:
+                xnew, ypred = function(x,y, 500, 0.1, 5, False)
+            else:
+                xnew, ypred = function(x,y, 500, 0.1, False)
+            axs[i,j].plot(x,y,'r.')
+            axs[i,j].plot(x_exact,y_exact, 'k--', label="y_exact", zorder=100)
+            axs[i,j].plot(xnew, ypred, label=f"{function.__name__}")
+            axs[i,j].legend()
+    plt.show()
