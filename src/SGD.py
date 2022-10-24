@@ -12,12 +12,22 @@ def CostOLS(beta,y,X):
 def learning_schedule(t):
     return t0/(t+t1)
 
+def designMatrix(x, polygrade):
+    n = len(x) 
+    X = np.ones((n,polygrade+1))      
+    for i in range(1,polygrade+1):
+        X[:,i] = (x**i).ravel()
+    return X
+
 def GD(x,y,Niterations, momentum, plot=True):
     n = len(x)
-    X = np.c_[np.ones((n,1)), x]
+    #X = np.c_[np.ones((n,1)), x, x**2]
+    X = designMatrix(x,2)
+    sh = X.shape[1]
+    
     XT_X = X.T @ X
 
-    theta = np.random.randn(2,1)
+    theta = np.random.randn(sh,1)
     eta = 0.1
     # define the gradient
     training_gradient = grad(CostOLS)
@@ -29,8 +39,11 @@ def GD(x,y,Niterations, momentum, plot=True):
     print("theta from own gd")
     print(theta)
 
-    xnew = np.array([[0],[2]])
-    Xnew = np.c_[np.ones((2,1)), xnew]
+    #xnew = np.array([[0],[2]])
+    xnew = np.linspace(0,2,n)
+    #Xnew = np.c_[np.ones((n,1)), xnew, xnew**2]
+    Xnew = designMatrix(xnew,2)
+
     ypredict = Xnew.dot(theta)
 
     if plot:
@@ -47,10 +60,13 @@ def GD(x,y,Niterations, momentum, plot=True):
 
 def SGD(x,y,Niterations, momentum, M, plot=True):
     n = len(x)
-    X = np.c_[np.ones((n,1)), x]
+    #X = np.c_[np.ones((n,1)), x, x**2]
+    X = designMatrix(x,2)
+
     XT_X = X.T @ X
+    sh = X.shape[1]
     
-    theta = np.random.randn(2,1)
+    theta = np.random.randn(sh,1)
     eta = 0.1
     # define the gradient
     training_gradient = grad(CostOLS)
@@ -69,8 +85,10 @@ def SGD(x,y,Niterations, momentum, M, plot=True):
     print("theta from own gd")
     print(theta)
 
-    xnew = np.array([[0],[2]])
-    Xnew = np.c_[np.ones((2,1)), xnew]
+    #xnew = np.array([[0],[2]])
+    xnew = np.linspace(0,2,n)
+    Xnew = designMatrix(xnew,2)
+    #Xnew = np.c_[np.ones((n,1)), xnew, xnew**2]
     ypredict = Xnew.dot(theta)
 
     if plot:
@@ -89,15 +107,14 @@ def SGD(x,y,Niterations, momentum, M, plot=True):
 #Added AdaGrad
 def GD_Tuned(x,y,Niterations, momentum, plot=True):
     n = len(x)
-    X = np.c_[np.ones((n,1)), x]
+    #X = np.c_[np.ones((n,1)), x, x**2]
+    X = designMatrix(x,2)
+
     sh = X.shape[1]
     XT_X = X.T @ X
-    #theta_linreg = np.linalg.pinv(XT_X) @ (X.T @ y)
-    #print("Own inversion")
-    #print(theta_linreg)
-    
-    theta = np.random.randn(2,1)
-    eta = 0.01
+
+    theta = np.random.randn(sh,1)
+    eta = 0.1
     # Including AdaGrad parameter to avoid possible division by zero
     delta  = 1e-8
     # define the gradient
@@ -105,6 +122,7 @@ def GD_Tuned(x,y,Niterations, momentum, plot=True):
     change = 0
     for iter in range(Niterations):
         Giter = np.zeros(shape=(sh,sh))
+        eta = learning_schedule(iter)
 
         gradients = training_gradient(theta,y,X) + momentum*change
         # Calculate the outer product of the gradients
@@ -118,8 +136,11 @@ def GD_Tuned(x,y,Niterations, momentum, plot=True):
     print("theta from own gd")
     print(theta)
 
-    xnew = np.array([[0],[2]])
-    Xnew = np.c_[np.ones((2,1)), xnew]
+    #xnew = np.array([[0],[2]])
+    xnew = np.linspace(0,2,n)
+    #Xnew = np.c_[np.ones((n,1)), xnew, xnew**2]
+    Xnew = designMatrix(xnew,2)
+
     ypredict = Xnew.dot(theta)
 
     if plot:
@@ -136,17 +157,21 @@ def GD_Tuned(x,y,Niterations, momentum, plot=True):
 #Added AdaGrad
 def SGD_Tuned(x,y,Niterations, momentum, M, plot=True):
     n = len(x)
-    X = np.c_[np.ones((n,1)), x]
+    #X = np.c_[np.ones((n,1)), x, x**2]
+    X = designMatrix(x,2)
+
     sh = X.shape[1]
     XT_X = X.T @ X
 
     
-    theta = np.random.randn(2,1)
-    eta = 0.01
+    theta = np.random.randn(sh,1)
+    eta = 0.2
     # Including AdaGrad parameter to avoid possible division by zero
     delta  = 1e-8
     # define the gradient
     training_gradient = grad(CostOLS)
+    # Value for parameter rho
+    rho = 0.99
     change = 0
     m = int(n/M)
     for iter in range(Niterations):
@@ -155,12 +180,19 @@ def SGD_Tuned(x,y,Niterations, momentum, M, plot=True):
             random_index = np.random.randint(m)*M
             xi = X[random_index:random_index+M]
             yi = y[random_index:random_index+M]
+            #Changing eta over time
+            eta = learning_schedule(iter*m+i)
 
             gradients = (1.0/M)*training_gradient(theta,yi,xi) + momentum*change
-            # Calculate the outer product of the gradients
+            # Previous value for the outer product of gradients
+            Previous = Giter
+            # Accumulated gradient
             Giter +=gradients @ gradients.T
+            # Scaling with rho the new and the previous results
+            Gnew = (rho*Previous+(1-rho)*Giter)
 	        # Simpler algorithm with only diagonal elements
-            Ginverse = np.c_[eta/(delta+np.sqrt(np.diagonal(Giter)))]
+            
+            Ginverse = np.c_[eta/(delta+np.sqrt(np.diagonal(Gnew)))]
 
             # compute update
             change = np.multiply(Ginverse,gradients)
@@ -168,8 +200,11 @@ def SGD_Tuned(x,y,Niterations, momentum, M, plot=True):
     print("theta from own gd")
     print(theta)
 
-    xnew = np.array([[0],[2]])
-    Xnew = np.c_[np.ones((2,1)), xnew]
+    #xnew = np.array([[0],[2]])
+    xnew = np.linspace(0,2,n)
+    #Xnew = np.c_[np.ones((n,1)), xnew, xnew**2]
+    Xnew = designMatrix(xnew,2)
+
     ypredict = Xnew.dot(theta)
     #ypredict2 = Xnew.dot(theta_linreg)
 
@@ -190,10 +225,10 @@ if __name__ == "__main__":
     n = 100 
     np.random.seed(4)
     x = np.random.rand(n,1)
-    y = 4+3*x+np.random.randn(n,1)
+    y = 4+3*x + x**2 +np.random.randn(n,1)
 
     x_exact = np.linspace(0,2,11)
-    y_exact = 4+3*x_exact
+    y_exact = 4+3*x_exact + x_exact**2
     #y = 2.0+3*x +4*x*x# +np.random.randn(n,1)
     t0, t1 = 5, 50
     #GD(x,y, 1000, 0.1)
@@ -237,19 +272,26 @@ if __name__ == "__main__":
     #testSGD()
     #Best values: Momentum = 0.1, batch size = 5, iterations = 200-1000 seems suitable enough
 
-    fig, axs = plt.subplots(2,2)
-    functions = [GD, GD_Tuned, SGD, SGD_Tuned]
-    count = 0
-    for i in range(2):
-        for j in range(2):
-            function = functions[count]
-            count += 1
-            if function == SGD or function == SGD_Tuned:
-                xnew, ypred = function(x,y, 500, 0.1, 5, False)
-            else:
-                xnew, ypred = function(x,y, 500, 0.1, False)
-            axs[i,j].plot(x,y,'r.')
-            axs[i,j].plot(x_exact,y_exact, 'k--', label="y_exact", zorder=100)
-            axs[i,j].plot(xnew, ypred, label=f"{function.__name__}")
-            axs[i,j].legend()
-    plt.show()
+    def test_tuning(x,y):
+        fig, axs = plt.subplots(2,2)
+        functions = [GD, GD_Tuned, SGD, SGD_Tuned]
+        count = 0
+        for i in range(2):
+            for j in range(2):
+                function = functions[count]
+                count += 1
+                if function == SGD or function == SGD_Tuned:
+                    xnew, ypred = function(x,y, 2000, 0.1, 5, False)
+                else:
+                    xnew, ypred = function(x,y, 500, 0.1, False)
+                axs[i,j].plot(x,y,'r.')
+                axs[i,j].plot(x_exact,y_exact, 'k--', label="y_exact", zorder=100)
+                axs[i,j].plot(xnew, ypred, label=f"{function.__name__}")
+                axs[i,j].legend()
+        #plt.title("with momentum")
+        #plt.savefig("figures/A4_momentum.png")
+        plt.show()
+    test_tuning(x,y)
+
+
+#Sett inn design matrisen fra forrige oppgave for X
