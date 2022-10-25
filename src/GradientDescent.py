@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt 
+from autograd import grad 
 
 def MSE(y,yp):
     return np.sum((y- yp)**2)/len(y)
@@ -53,6 +54,13 @@ This is for the specific seed, and could vary
 #Method for a varying step length/learning rate
 def step_length(t,t0,t1):
     return t0/(t+t1)
+
+
+def CostOLS(y,X,theta):
+    return np.sum((y-X @ theta)**2)
+
+
+#training_gradient = grad(CostOLS,2)
 
 def StocastichGD(x,y,iterations = 1000, t0 = 30, t1=10, threshold = 0.000001, momentum=0.1, M=5):
     n = len(x)

@@ -34,6 +34,7 @@ def GD(x,y,Niterations, momentum, plot=True):
     change = 0
     for iter in range(Niterations):
         gradients = training_gradient(theta,y,X) + momentum*change
+        #eta = learning_schedule(iter)
         change = eta*gradients
         theta -= change
     print("theta from own gd")
@@ -79,7 +80,7 @@ def SGD(x,y,Niterations, momentum, M, plot=True):
             yi = y[random_index:random_index+M]
 
             gradients = (1.0/M)*training_gradient(theta,yi,xi) + momentum*change
-            eta = learning_schedule(iter*m+i)
+            #eta = learning_schedule(iter*m+i)
             change = eta*gradients
             theta -= change
     print("theta from own gd")
@@ -165,7 +166,7 @@ def SGD_Tuned(x,y,Niterations, momentum, M, plot=True):
 
     
     theta = np.random.randn(sh,1)
-    eta = 0.2
+    eta = 0.1
     # Including AdaGrad parameter to avoid possible division by zero
     delta  = 1e-8
     # define the gradient
@@ -281,17 +282,14 @@ if __name__ == "__main__":
                 function = functions[count]
                 count += 1
                 if function == SGD or function == SGD_Tuned:
-                    xnew, ypred = function(x,y, 2000, 0.1, 5, False)
+                    xnew, ypred = function(x,y, 200, 0.1, 5, False)
                 else:
-                    xnew, ypred = function(x,y, 500, 0.1, False)
+                    xnew, ypred = function(x,y, 1000, 0.1, False)
                 axs[i,j].plot(x,y,'r.')
                 axs[i,j].plot(x_exact,y_exact, 'k--', label="y_exact", zorder=100)
                 axs[i,j].plot(xnew, ypred, label=f"{function.__name__}")
                 axs[i,j].legend()
-        #plt.title("with momentum")
-        #plt.savefig("figures/A4_momentum.png")
+        plt.savefig("figures/A4_OneTuned.png")
         plt.show()
     test_tuning(x,y)
 
-
-#Sett inn design matrisen fra forrige oppgave for X
