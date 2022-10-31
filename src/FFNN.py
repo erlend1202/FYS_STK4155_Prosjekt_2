@@ -1,7 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 from sklearn.metrics import accuracy_score
+from FrankeFunction import FrankeFunctionNoised, FrankeFunction
 
+def MSE(y,y_tilde):
+    sum = 0
+    n = len(y)
+    for i in range(n):
+        sum += (y[i] - y_tilde[i])**2
+    return sum/n
 
 def sigmoid(x):
     return 1/(1 + np.exp(-x))
@@ -9,15 +16,22 @@ def sigmoid(x):
 # one-hot in numpy
 def to_categorical_numpy(integer_vector):
     n_inputs = len(integer_vector)
-    n_categories = np.max(integer_vector) + 1
+    n_categories = len(np.unique(integer_vector)) 
     onehot_vector = np.zeros((n_inputs, n_categories))
     onehot_vector[range(n_inputs), integer_vector] = 1
     
     return onehot_vector
 
+def designMatrix(x, polygrade):
+    n = len(x) 
+    X = np.ones((n,polygrade+1))      
+    for i in range(1,polygrade+1):
+        X[:,i] = (x**i).ravel()
+    return X
+
 class FFNN:
 
-    def __init__(self, X, Y, n_hidden_neurons = 50, n_categories = 10, eta = 0.1, lmbd=0.0, epochs = 10, batch_size = 10):
+    def __init__(self, X, Y, n_hidden_neurons = 50, n_categories = 1, eta = 0.1, lmbd=0.0, epochs = 10, batch_size = 10):
         self.X = X
         self.Y = Y
         self.eta = eta 
@@ -26,7 +40,12 @@ class FFNN:
         self.batch_size = batch_size
         # building our neural network
 
-        self.n_inputs, self.n_features = X.shape
+        try:
+            self.n_inputs, self.n_features = X.shape
+        except:
+            self.n_inputs = len(X)
+            self.n_features = 1
+
         self.n_hidden_neurons = n_hidden_neurons
         self.n_categories = n_categories
 
@@ -47,24 +66,31 @@ class FFNN:
         z_h = np.matmul(self.X_data, self.hidden_weights) + self.hidden_bias
         # activation in the hidden layer
         self.a_h = sigmoid(z_h)
-        
         # weighted sum of inputs to the output layer
         z_o = np.matmul(self.a_h, self.output_weights) + self.output_bias
         # softmax output
         # axis 0 holds each input and axis 1 the probabilities of each category
         exp_term = np.exp(z_o)
-
-        self.probabilities = exp_term / np.sum(exp_term, axis=1, keepdims=True)
+        #self.probabilities = exp_term / np.sum(exp_term, axis=1, keepdims=True)
+        self.probabilities = exp_term
 
     def predict(self):
         return np.argmax(self.probabilities, axis=1)
 
     def backpropagation(self):
-        self.feed_forward()
         a_h, probabilities = self.a_h, self.probabilities
         
         # error in the output layer
         error_output = probabilities - self.Y_data
+
+        #test
+        #w = self.hidden_weights @ self.output_weights
+        #y_pred = X.dot(w)
+        #error_output = MSE(y,y_pred)
+        #error_output = y - y_pred
+        #test
+
+
         # error in the hidden layer
         error_hidden = np.matmul(error_output, self.output_weights.T) * a_h * (1 - a_h)
         
@@ -86,11 +112,14 @@ class FFNN:
         self.hidden_weights -= self.eta * self.hidden_weights_gradient
         self.hidden_bias -= self.eta * self.hidden_bias_gradient
 
+                
     def train(self):
         data_indices = np.arange(self.n_inputs)
 
-        for i in range(self.epochs):
-            for j in range(self.iterations):
+        for i in range(1):
+        #for i in range(self.epochs):
+            #for j in range(self.iterations):
+            for j in range(1):
                 # pick datapoints with replacement
                 chosen_datapoints = np.random.choice(
                     data_indices, size=self.batch_size, replace=False
@@ -108,13 +137,36 @@ class FFNN:
                 self.backpropagation()
 
 if __name__ == "__main__":
+    np.random.seed(4)
+
+    
     n = 100 
     np.random.seed(4)
     x = np.random.rand(n,1)
     y = 4+3*x + x**2 +np.random.randn(n,1)
-
-    x_exact = np.linspace(0,2,11)
+    
+    x_exact = np.linspace(0,2,n)
     y_exact = 4+3*x_exact + x_exact**2
 
-    test = FFNN(x,y)
+    X = designMatrix(x,2)
+    test = FFNN(X,y)
     test.train()
+    print(test.output_weights.shape)
+    print(test.hidden_weights.shape)
+
+    w = test.hidden_weights @ test.output_weights
+    print(test.hidden_bias.shape)
+    print(test.output_bias.shape)
+    print(w + test.output_bias)
+
+
+    """
+    x = np.arange(0, 1, 0.1)
+    y = np.arange(0, 1, 0.1)
+    x, y = np.meshgrid(x,y)
+    X = np.column_stack((x.ravel(), y.ravel()))
+    X = X.ravel()
+    Y = FrankeFunctionNoised(x,y,0.01).ravel()
+    test = FFNN(x,Y)
+    test.train()
+    """

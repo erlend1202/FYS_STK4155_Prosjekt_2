@@ -200,6 +200,7 @@ def SGD_Tuned(x,y,Niterations, momentum, M, plot=True):
             theta -= change
     print("theta from own gd")
     print(theta)
+    print(theta.shape)
 
     #xnew = np.array([[0],[2]])
     xnew = np.linspace(0,2,n)
@@ -292,4 +293,6 @@ if __name__ == "__main__":
         plt.savefig("figures/A4_OneTuned.png")
         plt.show()
     test_tuning(x,y)
+
+
 
