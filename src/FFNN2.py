@@ -41,6 +41,8 @@ class FeedForwardNeuralNetwork:
         self.z_h = np.matmul(self.current_X_data, self.hidden_weights) + self.hidden_bias
         self.a_h = sigmoid(self.z_h)
         self.z_o = np.matmul(self.a_h, self.output_weights) + self.output_bias
+        print(self.z_o)
+        # Error when z_o becomes NaN
         exp_term = np.exp(self.z_o)
         self.probabilities = exp_term / np.sum(exp_term, axis = 1, keepdims = True)
 
