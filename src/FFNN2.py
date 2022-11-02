@@ -69,6 +69,10 @@ class FeedForwardNeuralNetwork:
         a_h = sigmoid(z_h)
         z_o = np.matmul(a_h, self.output_weights) + self.output_bias
 
+        #exp_term = np.exp(z_o)
+        #probabilities = exp_term / np.sum(exp_term, axis = 1, keepdims = True)
+
+
         return z_o
     
     def backpropagation(self):
@@ -116,7 +120,9 @@ class FeedForwardNeuralNetwork:
         #y_pred = self.feed_forward_out(X)
         #print(y_pred)
 """
+
 if __name__ == "__main__":
+    np.random.seed(12345)
     n = 100
     dims = 1
     np.random.seed(4)
@@ -152,4 +158,17 @@ if __name__ == "__main__":
     plt.plot(x, y_exact, label="exact")
     plt.plot(x, nn.predict_probabilities(X), label="predict")
     plt.legend()
+    x = np.linspace(0, 1, n)
+    x = x.reshape(n, 1)
+    
+    noise = np.random.normal(0, 0.1, n)
+    noise = noise.reshape(n, 1)
+    y = 4 + 3 * x + x ** 2 + noise
+    X = designMatrix(x,1)
+
+    nn = FeedForwardNeuralNetwork(X, y, 5, 1, 10, epochs=10000)
+    nn.train()
+
+    plt.plot(x, y)
+    plt.plot(x, nn.predict_probabilities(X))
     plt.show()
