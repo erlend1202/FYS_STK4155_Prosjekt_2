@@ -11,6 +11,14 @@ def MSE(y,y_tilde):
 def sigmoid(x):
     return 1/(1 + np.exp(-x))
 
+def sigmoid(x):
+    if x >= 0:
+        z = np.exp(-x)
+        return 1 / (1 + z)
+    else:
+        z = np.exp(x)
+        return  z / (1 + z)
+
 def designMatrix(x, polygrade):
     n = len(x) 
     X = np.ones((n,polygrade+1))      
@@ -25,34 +33,40 @@ def relu(z):
 def delta_relu(z):
     return np.where(z > 0, 1, 0)
 
-n = 100
+def learning_schedule(t):
+    return t0/(t+t1)
+
+t0, t1 = 5, 50
+
+n = 1000
 np.random.seed(4)
 x = np.random.rand(n,1)
-
-y = 4+3*x + x**2 +np.random.randn(n,1)*0.001
+#x = np.linspace(0,1,n)
+#x = x.reshape(n,1)
+y = 4+3*x + 5*x**2 + np.random.randn(n,1)
 
 x_exact = np.linspace(0,1,n)
-y_exact = 4+3*x_exact + x_exact**2
+y_exact = 4+3*x_exact + 5*x_exact**2
 
 X = designMatrix(x,2)
 Y = y
-eta = 0.01
+eta = 3
 
 n_inputs, n_features = X.shape
 n_hidden = 5 
 n_output = 1
 
 
-w1 = np.random.rand(n_features, 5)
-w2 = np.random.rand(5, 8)
+w1 = np.random.rand(n_features, 3)
+w2 = np.random.rand(3, 8)
 w3 = np.random.rand(8, 1)
 
-b1 = np.zeros(5) + 0.001
+b1 = np.zeros(3) + 0.001
 b2 = np.zeros(8) + 0.001
 b3 = np.zeros(1) + 0.001
 
 
-for i in range(5000):
+for i in range(1000):
     A = relu(X@w1 + b1)
     B = relu(A@w2 + b2)
     Y_pred = B@w3 + b3
@@ -80,6 +94,9 @@ for i in range(5000):
     b1 -= eta*db1 
     b2 -= eta*db2 
     b3 -= eta*db3 
+    
+    eta = learning_schedule(i)
+
 
 print(MSE(Y,Y_pred))
 
@@ -89,8 +106,8 @@ A = relu(X_exact@w1 + b1)
 B = relu(A@w2 + b2)
 Y_pred = B@w3 + b3
 
-plt.plot(x_exact,Y_pred)
-plt.plot(x_exact,y, label ="noise")
+plt.plot(x_exact,Y_pred, label="prediction")
+#plt.plot(x_exact,y, label ="noise")
 plt.plot(x_exact,y_exact, label ="exact")
 
 plt.legend()
