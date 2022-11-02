@@ -54,7 +54,7 @@ class FeedForwardNeuralNetwork:
         self.hidden_weights = np.random.randn(self.n_features, self.n_hidden_neurons)
         self.hidden_bias = np.zeros(self.n_hidden_neurons) + 0.01
 
-        self.output_weights = np.random.randn(self.n_hidden_neurons, 1)
+        self.output_weights = np.random.randn(self.n_hidden_neurons, self.n_categories)
         self.output_bias = np.zeros(self.n_categories) + 0.01
     
     def feed_forward(self): 
@@ -74,17 +74,16 @@ class FeedForwardNeuralNetwork:
         z_h = np.matmul(X, self.hidden_weights) + self.hidden_bias
         a_h = sigmoid(z_h)
         z_o = np.matmul(a_h, self.output_weights) + self.output_bias
-        exp_term = np.exp(z_o)
-        probabilities = exp_term / np.sum(exp_term, axis = 1, keepdims = True)
+        #exp_term = np.exp(z_o)
+        #probabilities = exp_term / np.sum(exp_term, axis = 1, keepdims = True)
 
-        return probabilities
+
+        return z_o
     
     def backpropagation(self):
         error_output = self.probabilities - self.current_Y_data
-        #print(error_output.shape, self.output_weights.shape, self.a_h.shape)
-        error_hidden = np.matmul(error_output, self.output_weights) * self.a_h * (1 - self.a_h)
+        error_hidden = np.matmul(error_output, self.output_weights.T) * self.a_h * (1 - self.a_h)
         
-        print(self.a_h.T.shape, error_output.shape)
         self.output_weights_gradient = np.matmul(self.a_h.T, error_output)
         self.output_bias_gradient = np.sum(error_output, axis=0)
 
@@ -95,7 +94,6 @@ class FeedForwardNeuralNetwork:
             self.output_weights_gradient += self.lmbda * self.output_weights
             self.hidden_weights_gradient += self.lmbda * self.hidden_weights
         
-        print(self.output_weights.shape, self.output_weights_gradient.shape)
         self.output_weights -= self.eta * self.output_weights_gradient
         self.output_bias -= self.eta * self.output_bias_gradient
         self.hidden_weights -= self.eta * self.hidden_weights_gradient
@@ -124,16 +122,17 @@ class FeedForwardNeuralNetwork:
 
                 self.feed_forward()
                 self.backpropagation()
-        y_pred = self.current_X_data.dot(self.probabilities.T)
-        print(self.probabilities.shape)
-        print(self.current_X_data.shape)
 
 if __name__ == "__main__":
     n = 100
     np.random.seed(4)
-    x = np.random.rand(n, 1)
-    y = 4 + 3*x + x ** 2 + np.random.randn(n, 1)
+    x = np.linspace(0, 1, n)
+    x = x.reshape(n, 1)
+
+    print(x.shape)
+    y = 4 + 3*x + x ** 2
     X = designMatrix(x,2)
-    nn = FeedForwardNeuralNetwork(X, y, 3, 3, 10)
+    nn = FeedForwardNeuralNetwork(X, y, 3, 1, 10)
     nn.train()
-    #print(nn.predict(y))
+    nn.predict(X)
+    print(y)
