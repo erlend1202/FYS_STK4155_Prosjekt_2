@@ -2,7 +2,7 @@
 
 import numpy as np
 from sklearn import neural_network
-
+import matplotlib.pyplot as plt
 def MSE(y,y_tilde):
     sum = 0
     n = len(y)
@@ -111,10 +111,8 @@ class FeedForwardNeuralNetwork:
     def train(self):
         data_indices = np.arange(self.n_inputs)
 
-        #for i in range(self.epochs):
-        for i in range(1):
-            for j in range(1):
-            #for j in range(self.iterations):
+        for i in range(self.epochs):
+            for j in range(self.iterations):
                 chosen_datapoints = np.random.choice(data_indices, size=self.batch_size, replace=False)
 
                 self.current_X_data = self.X[chosen_datapoints]
@@ -124,15 +122,19 @@ class FeedForwardNeuralNetwork:
                 self.backpropagation()
 
 if __name__ == "__main__":
+    np.random.seed(12345)
     n = 100
-    np.random.seed(4)
     x = np.linspace(0, 1, n)
     x = x.reshape(n, 1)
+    
+    noise = np.random.normal(0, 0.1, n)
+    noise = noise.reshape(n, 1)
+    y = 4 + 3 * x + x ** 2 + noise
+    X = designMatrix(x,1)
 
-    print(x.shape)
-    y = 4 + 3*x + x ** 2
-    X = designMatrix(x,2)
-    nn = FeedForwardNeuralNetwork(X, y, 3, 1, 10)
+    nn = FeedForwardNeuralNetwork(X, y, 5, 1, 10, epochs=10000)
     nn.train()
-    nn.predict(X)
-    print(y)
+
+    plt.plot(x, y)
+    plt.plot(x, nn.predict_probabilities(X))
+    plt.show()
