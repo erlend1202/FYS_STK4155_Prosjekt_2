@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 from FrankeFunction import FrankeFunctionNoised, FrankeFunction
 
+
 def MSE(y,y_tilde):
     sum = 0
     n = len(y)
@@ -10,17 +11,16 @@ def MSE(y,y_tilde):
         sum += (y[i] - y_tilde[i])**2
     return sum/n
 
-def sigmoid(x):
-    return 1/(1 + np.exp(-x))
 
-# one-hot in numpy
-def to_categorical_numpy(integer_vector):
-    n_inputs = len(integer_vector)
-    n_categories = len(np.unique(integer_vector)) 
-    onehot_vector = np.zeros((n_inputs, n_categories))
-    onehot_vector[range(n_inputs), integer_vector] = 1
-    
-    return onehot_vector
+def sigmoid(x):
+    if x >= 0:
+        z = np.exp(-x)
+        return 1 / (1 + z)
+    else:
+        z = np.exp(x)
+        return  z / (1 + z)
+
+sigmoid = np.vectorize(sigmoid)
 
 def designMatrix(x, polygrade):
     n = len(x) 
@@ -29,144 +29,190 @@ def designMatrix(x, polygrade):
         X[:,i] = (x**i).ravel()
     return X
 
-class FFNN:
+def relu(z):
+    a = np.maximum(0,z)
+    return a
 
-    def __init__(self, X, Y, n_hidden_neurons = 50, n_categories = 1, eta = 0.1, lmbd=0.0, epochs = 10, batch_size = 10):
+def delta_relu(z):
+    return np.where(z > 0, 1, 0)
+
+def learning_schedule(t):
+    return t0/(t+t1)
+
+
+
+
+class FeedForwardNeuralNetwork:
+    def __init__(self, X, Y, layers, n_hidden_neurons = 50, n_categories = 1, batch_size = 100, eta = 0.1, lmbda = 0.0, epochs = 10):
         self.X = X
         self.Y = Y
-        self.eta = eta 
-        self.lmbd = lmbd
-        self.epochs = epochs 
-        self.batch_size = batch_size
-        # building our neural network
-
-        try:
-            self.n_inputs, self.n_features = X.shape
-        except:
-            self.n_inputs = len(X)
-            self.n_features = 1
-
         self.n_hidden_neurons = n_hidden_neurons
+        self.n_inputs = X.shape[0] # Samples
+        self.n_features = X.shape[1]
         self.n_categories = n_categories
-
+        self.epochs = epochs
+        self.batch_size = batch_size
         self.iterations = self.n_inputs // self.batch_size
+        self.eta = eta
+        self.lmbda = lmbda
+        self.layers = layers 
+        self.num_layers = len(layers)
 
-        # we make the weights normally distributed using numpy.random.randn
+        # Creating biases and weights with initial values
+        self.create_biases_and_weights()
 
-        # weights and bias in the hidden layer
-        self.hidden_weights = np.random.randn(self.n_features, n_hidden_neurons)
-        self.hidden_bias = np.zeros(n_hidden_neurons) + 0.01
+    def create_biases_and_weights(self):
+        self.weights = []
+        self.bias = []
+        for i in range(self.num_layers):
+            if i==0:
+                w = np.random.randn(self.n_features, self.layers[i])
+                b = np.zeros(self.layers[i]) + 0.01
+            else:
+                w = np.random.randn(self.layers[i-1], self.layers[i])
+                b = np.zeros(self.layers[i]) + 0.01
+            self.weights.append(w)
+            self.bias.append(b)
+        w = np.random.randn(self.layers[i], self.n_categories)
+        b = np.zeros(self.n_categories) + 0.01
+        self.weights.append(w)
+        self.bias.append(b)
+             
 
-        # weights and bias in the output layer
-        self.output_weights = np.random.randn(n_hidden_neurons, n_categories)
-        self.output_bias = np.zeros(n_categories) + 0.01
+        self.hidden_weights = np.random.randn(self.n_features, self.n_hidden_neurons)
+        self.hidden_bias = np.zeros(self.n_hidden_neurons) + 0.01
 
-    def feed_forward(self):
-        # weighted sum of inputs to the hidden layer
-        z_h = np.matmul(self.X_data, self.hidden_weights) + self.hidden_bias
-        # activation in the hidden layer
-        self.a_h = sigmoid(z_h)
-        # weighted sum of inputs to the output layer
-        z_o = np.matmul(self.a_h, self.output_weights) + self.output_bias
-        # softmax output
-        # axis 0 holds each input and axis 1 the probabilities of each category
-        exp_term = np.exp(z_o)
-        #self.probabilities = exp_term / np.sum(exp_term, axis=1, keepdims=True)
-        self.probabilities = exp_term
+        self.output_weights = np.random.randn(self.n_hidden_neurons, self.n_categories)
+        self.output_bias = np.zeros(self.n_categories) + 0.01
+    
+    def feed_forward(self): 
+        self.z = []
+        self.a = []
 
-    def predict(self):
-        return np.argmax(self.probabilities, axis=1)
+        for i in range(self.num_layers):
+            if i == 0:
+                z = np.matmul(self.current_X_data, self.weights[i]) + self.bias[i]
+                a = sigmoid(z)
+            else:
+                z = np.matmul(self.a[i-1], self.weights[i]) + self.bias[i]
+                a = sigmoid(z)
 
+            self.z.append(z)
+            self.a.append(a)
+        
+        z = np.matmul(self.a[-1], self.weights[-1]) + self.bias[-1]
+        self.z.append(z)
+        self.a.append(z)
+        
+        #self.probabilities = z
+
+        self.z_h = np.matmul(self.current_X_data, self.hidden_weights) + self.hidden_bias
+        self.a_h = sigmoid(self.z_h)
+        
+        self.z_o = np.matmul(self.a_h, self.output_weights) + self.output_bias
+        
+        self.probabilities = self.z_o
+
+    def feed_forward_out(self, X):
+        z_h = np.matmul(X, self.hidden_weights) + self.hidden_bias
+        a_h = sigmoid(z_h)
+        z_o = np.matmul(a_h, self.output_weights) + self.output_bias
+
+        return z_o
+    
     def backpropagation(self):
-        a_h, probabilities = self.a_h, self.probabilities
+        prob = self.z[-1] 
+        error1 = prob - self.current_Y_data
+        errors = []
+        for i in range(self.num_layers):
+            print(i)
+            if i == 0:
+                print(error1.shape, self.weights[i].shape, self.a[i].shape)
+                error = np.matmul(error1, self.weights[self.num_layers].T) * self.a[self.num_layers] * (1-self.a[self.num_layers])
+            else:
+                print(errors[i-1].shape, self.weights[self.num_layers-i].shape, self.a[self.num_layers-i].shape)
+                error = np.matmul(errors[i-1], self.weights[self.num_layers-i].T) * self.a[self.num_layers-i] * (1-self.a[self.num_layers-i])
+            errors.append(error)
+
+        error_output = self.probabilities - self.current_Y_data
+        error_hidden = np.matmul(error_output, self.output_weights.T) * self.a_h * (1 - self.a_h)
         
-        # error in the output layer
-        error_output = probabilities - self.Y_data
-
-        #test
-        #w = self.hidden_weights @ self.output_weights
-        #y_pred = X.dot(w)
-        #error_output = MSE(y,y_pred)
-        #error_output = y - y_pred
-        #test
-
-
-        # error in the hidden layer
-        error_hidden = np.matmul(error_output, self.output_weights.T) * a_h * (1 - a_h)
-        
-        # gradients for the output layer
-        self.output_weights_gradient = np.matmul(a_h.T, error_output)
+        self.output_weights_gradient = np.matmul(self.a_h.T, error_output)
         self.output_bias_gradient = np.sum(error_output, axis=0)
-        
-        # gradient for the hidden layer
-        self.hidden_weights_gradient = np.matmul(self.X_data.T, error_hidden)
+
+        self.hidden_weights_gradient = np.matmul(self.current_X_data.T, error_hidden)
         self.hidden_bias_gradient = np.sum(error_hidden, axis=0)
 
-
-        if self.lmbd > 0.0:
-            self.output_weights_gradient += self.lmbd * self.output_weights
-            self.hidden_weights_gradient += self.lmbd * self.hidden_weights
-
+        if self.lmbda > 0.0:
+            self.output_weights_gradient += self.lmbda * self.output_weights
+            self.hidden_weights_gradient += self.lmbda * self.hidden_weights
+        
         self.output_weights -= self.eta * self.output_weights_gradient
         self.output_bias -= self.eta * self.output_bias_gradient
         self.hidden_weights -= self.eta * self.hidden_weights_gradient
         self.hidden_bias -= self.eta * self.hidden_bias_gradient
 
-                
+
+    def predict(self, X):
+        probabilities = self.feed_forward_out(X)
+        return np.argmax(probabilities, axis=1)
+    
+    def predict_probabilities(self, X):
+        probabilities = self.feed_forward_out(X)
+        return probabilities
+    
     def train(self):
         data_indices = np.arange(self.n_inputs)
 
-        for i in range(1):
-        #for i in range(self.epochs):
-            #for j in range(self.iterations):
-            for j in range(1):
-                # pick datapoints with replacement
-                chosen_datapoints = np.random.choice(
-                    data_indices, size=self.batch_size, replace=False
-                )
+        for i in range(self.epochs):
+            for j in range(self.iterations):
+                chosen_datapoints = np.random.choice(data_indices, size=self.batch_size, replace=False)
 
-                # minibatch training data
-                #self.X_data = self.X[chosen_datapoints]
-                #self.Y_data = self.Y[chosen_datapoints]
-
-                #For å teste, fikk ikke kode over til å funke enda¨
-                self.X_data = self.X 
-                self.Y_data = self.Y 
+                self.current_X_data = self.X[chosen_datapoints]
+                self.current_Y_data = self.Y[chosen_datapoints]
 
                 self.feed_forward()
                 self.backpropagation()
 
+"""
 if __name__ == "__main__":
+    n = 100
+    dims = 1
     np.random.seed(4)
+    x = np.random.rand(n, 1)
+    y = 4 + 3*x + x ** 2 + np.random.randn(n, 1)
+    X = designMatrix(x,dims)
+    nn = FeedForwardNeuralNetwork(X, y, 3, 1, 10, epochs=1000)
+    nn.train()
 
-    
-    n = 100 
-    np.random.seed(4)
-    x = np.random.rand(n,1)
-    y = 4+3*x + x**2 +np.random.randn(n,1)
-    
-    x_exact = np.linspace(0,2,n)
-    y_exact = 4+3*x_exact + x_exact**2
+    x_exact = np.linspace(0,1,n)
+    x_exact = x_exact.reshape(n,1)
+    y_exact = 4 + 3*x_exact + x_exact**2
+    X_exact = designMatrix(x_exact, dims)
+    y_pred = nn.feed_forward_out(X_exact)
+    print(y_pred)
+    plt.plot(x_exact, y_pred)
+    plt.plot(x_exact,y_exact)
+    plt.show()
+"""
 
-    X = designMatrix(x,2)
-    test = FFNN(X,y)
-    test.train()
-    print(test.output_weights.shape)
-    print(test.hidden_weights.shape)
+if __name__ == "__main__":
+    #n = 1000
+    n = 100
+    dim = 2
+    np.random.seed(40)
+    x = np.linspace(0, 1, n)
+    x = x.reshape(n, 1)
+    X = designMatrix(x,dim)
 
-    w = test.hidden_weights @ test.output_weights
-    print(test.hidden_bias.shape)
-    print(test.output_bias.shape)
-    print(w + test.output_bias)
+    y_exact = 4 + 3*x + x ** 2 
+    y = y_exact + np.random.randn(n,1)*0.1
 
-
-    """
-    x = np.arange(0, 1, 0.1)
-    y = np.arange(0, 1, 0.1)
-    x, y = np.meshgrid(x,y)
-    X = np.column_stack((x.ravel(), y.ravel()))
-    X = X.ravel()
-    Y = FrankeFunctionNoised(x,y,0.01).ravel()
-    test = FFNN(x,Y)
-    test.train()
-    """
+    layers = [5, 8, 13, 8]
+    nn = FeedForwardNeuralNetwork(X, y, layers, 3, 1, 10, epochs=10)
+    nn.train()
+    #plt.plot(x, y, label="noise")
+    plt.plot(x, y_exact, label="exact")
+    plt.plot(x, nn.predict_probabilities(X), label="predict")
+    plt.legend()
+    plt.show()
