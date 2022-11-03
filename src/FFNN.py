@@ -99,11 +99,11 @@ class FeedForwardNeuralNetwork:
 
             self.z.append(z)
             self.a.append(a)
-        
+            
         z = np.matmul(self.a[-1], self.weights[-1]) + self.bias[-1]
         self.z.append(z)
         self.a.append(z)
-        
+    
         #self.probabilities = z
 
         self.z_h = np.matmul(self.current_X_data, self.hidden_weights) + self.hidden_bias
@@ -127,16 +127,15 @@ class FeedForwardNeuralNetwork:
         for i in range(self.num_layers):
             print(i)
             if i == 0:
-                print(error1.shape, self.weights[i].shape, self.a[i].shape)
-                error = np.matmul(error1, self.weights[self.num_layers].T) * self.a[self.num_layers] * (1-self.a[self.num_layers])
+                error = np.matmul(error1, self.weights[self.num_layers].T) * self.a[self.num_layers-1] * (1-self.a[self.num_layers-1])
             else:
-                print(errors[i-1].shape, self.weights[self.num_layers-i].shape, self.a[self.num_layers-i].shape)
-                error = np.matmul(errors[i-1], self.weights[self.num_layers-i].T) * self.a[self.num_layers-i] * (1-self.a[self.num_layers-i])
+                error = np.matmul(errors[i-1], self.weights[self.num_layers-i].T) * self.a[self.num_layers-i-1] * (1-self.a[self.num_layers-i-1])
             errors.append(error)
 
         error_output = self.probabilities - self.current_Y_data
         error_hidden = np.matmul(error_output, self.output_weights.T) * self.a_h * (1 - self.a_h)
-        
+        #print(error_output.shape, self.output_weights.T.shape, self.a_h.shape)
+        #print(error_hidden.shape)
         self.output_weights_gradient = np.matmul(self.a_h.T, error_output)
         self.output_bias_gradient = np.sum(error_output, axis=0)
 
