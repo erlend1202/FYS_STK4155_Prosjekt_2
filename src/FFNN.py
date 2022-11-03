@@ -2,7 +2,6 @@ from matplotlib.colors import LogNorm
 import numpy as np
 import matplotlib.pyplot as plt 
 from sklearn.metrics import accuracy_score
-from FrankeFunction import FrankeFunctionNoised, FrankeFunction
 
 def MSE(y,y_tilde):
     sum = 0
