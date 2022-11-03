@@ -123,14 +123,31 @@ class FeedForwardNeuralNetwork:
     def backpropagation(self):
         prob = self.z[-1] 
         error1 = prob - self.current_Y_data
-        errors = []
+        errors = [error1]
+        self.w_grads = []
+        self.bias_grads = []
+
         for i in range(self.num_layers):
-            print(i)
             if i == 0:
-                error = np.matmul(error1, self.weights[self.num_layers].T) * self.a[self.num_layers-1] * (1-self.a[self.num_layers-1])
+                error = np.matmul(errors[i], self.weights[self.num_layers].T) * self.a[self.num_layers-1] * (1-self.a[self.num_layers-1])
             else:
-                error = np.matmul(errors[i-1], self.weights[self.num_layers-i].T) * self.a[self.num_layers-i-1] * (1-self.a[self.num_layers-i-1])
+                error = np.matmul(errors[i], self.weights[self.num_layers-i].T) * self.a[self.num_layers-i-1] * (1-self.a[self.num_layers-i-1])
+            dw = np.matmul(self.a[self.num_layers-1-i].T, errors[i])
+            db = np.sum(errors[i], axis=0)
+
             errors.append(error)
+            self.w_grads.append(dw)
+            self.bias_grads.append(db)
+
+        dw = np.matmul(self.current_X_data.T, errors[self.num_layers])
+        db = np.sum(errors[self.num_layers], axis=0)
+
+        self.w_grads.append(dw)
+        self.bias_grads.append(db)
+
+        for i in range(self.num_layers+1):
+            self.weights[i] -= self.eta * self.w_grads[self.num_layers-i]
+            self.bias[i] -= self.eta * self.bias_grads[self.num_layers-i]
 
         error_output = self.probabilities - self.current_Y_data
         error_hidden = np.matmul(error_output, self.output_weights.T) * self.a_h * (1 - self.a_h)
