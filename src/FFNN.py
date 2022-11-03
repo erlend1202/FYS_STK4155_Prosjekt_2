@@ -1,8 +1,8 @@
+from matplotlib.colors import LogNorm
 import numpy as np
 import matplotlib.pyplot as plt 
 from sklearn.metrics import accuracy_score
 from FrankeFunction import FrankeFunctionNoised, FrankeFunction
-
 
 def MSE(y,y_tilde):
     sum = 0
@@ -192,23 +192,80 @@ if __name__ == "__main__":
     plt.show()
 """
 
+
+def grid_search_hyperparameters(X, y, y_exact, layers, plot_title, n_categories = 1, batch_size = 10, epochs = 200, eta_vals = np.logspace(-5, 1, 7), lmd_vals = np.logspace(-5, 1, 7), verbose = False):
+
+    mse_values = np.zeros((len(eta_vals), len(lmd_vals)))
+
+    for i, eta in enumerate(eta_vals):
+        for j, lmd in enumerate(lmd_vals):
+            nn = FeedForwardNeuralNetwork(X, y, layers, n_categories, batch_size, epochs = epochs, eta=eta, lmbda=lmd)
+            nn.train()
+            y_tilde = nn.predict_probabilities(X)
+            mse = MSE(y_exact, y_tilde)
+            mse_values[i, j] = mse
+
+            if verbose:
+                print(f"eta:{eta}, lambda:{lmd} gives mse {mse}")
+
+    def array_elements_to_string(arr):
+        new_arr = []
+
+        for element in arr:
+            new_arr.append(str(element))
+        
+        return new_arr
+
+    labels_x = array_elements_to_string(eta_vals)
+    labels_y = array_elements_to_string(lmd_vals)
+
+    plt.figure()
+    plt.title(plot_title)
+    plt.xticks(np.arange(0, len(eta_vals)), labels_x)
+    plt.yticks(np.arange(0, len(lmd_vals)), labels_y)
+    plt.xlabel("$\eta$")
+    plt.ylabel("$\lambda$")
+    plt.imshow(mse_values, norm=LogNorm())
+    plt.colorbar()
+
+def epochs_plot(X, y, y_exact, layers, plot_title, max_epochs, lmda, eta, verbose = False):
+    mse_values = np.zeros(max_epochs)
+
+    for epoch in range(max_epochs):
+        nn = FeedForwardNeuralNetwork(X, y, layers, 1, 10, epochs=epoch, eta=eta, lmbda=lmda)
+        nn.train()
+        mse_values[epoch] = MSE(y_exact, nn.predict_probabilities(X))
+        if verbose:
+            print(f"Testing epoch {epoch}")
+    
+    plt.figure()
+    plt.title(plot_title)
+    plt.plot(mse_values)
+    plt.xlabel("Epoch")
+    plt.ylabel("MSE")
+
+
 if __name__ == "__main__":
     t0, t1 = 5, 50 #not used yet
-    #n = 1000
     n = 100
-    dim = 2
+    dim = 1 # Number of polynoms does not seem to give a different result
+
     np.random.seed(40)
     x = np.linspace(0, 1, n)
     x = x.reshape(n, 1)
     X = designMatrix(x,dim)
 
     y_exact = 4 + 3*x + x ** 2 
-    y = y_exact + np.random.randn(n,1)*0.1
+    noise = np.random.normal(0, 0.1, n).reshape(n, 1)
+    y = y_exact + noise
 
-    layers = [5,3]
-    nn = FeedForwardNeuralNetwork(X, y, layers, 1, 10, epochs=1000)
+    layers = [5, 4, 3]
+    nn = FeedForwardNeuralNetwork(X, y, layers, 1, 10, epochs=200, eta=0.01, lmbda=0.01)
     nn.train()
-    #plt.plot(x, y, label="noise")
+
+    grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy")
+    epochs_plot(X, y, y_exact, layers, "Epochs", 200, 0.01, 0.01)
+    plt.figure()
     plt.plot(x, y_exact, label="exact")
     plt.plot(x, nn.predict_probabilities(X), label="predict")
     plt.legend()
