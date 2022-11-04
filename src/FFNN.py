@@ -42,7 +42,7 @@ def leaky_relu(z):
 def delta_leaky_relu(z):
     return np.where(z > 0, 1, 0.01*z)
 
-def learning_schedule(t):
+def learning_schedule(t, t0, t1):
     return t0/(t+t1)
 
 
@@ -64,6 +64,8 @@ class FeedForwardNeuralNetwork:
         self.layers = layers 
         self.num_layers = len(layers)
 
+        #for eta
+        self.t0, self.t1 = 5, 50
         # Creating biases and weights with initial values
         self.create_biases_and_weights()
 
@@ -163,10 +165,15 @@ class FeedForwardNeuralNetwork:
         self.w_grads.append(dw)
         self.bias_grads.append(db)
 
+        #self.w_grad = np.array(self.w_grads)
+        #self.bias_grads = np.array(self.bias_grads)
+
+        if self.lmbda > 0:
+            self.w_grads += np.multiply(self.w_grads, self.lmbda, dtype=object)
+
         for i in range(self.num_layers+1):
             self.weights[i] -= self.eta * self.w_grads[self.num_layers-i]
             self.bias[i] -= self.eta * self.bias_grads[self.num_layers-i]
-
 
 
     def predict(self, X):
@@ -182,6 +189,8 @@ class FeedForwardNeuralNetwork:
 
         for i in range(self.epochs):
             for j in range(self.iterations):
+                self.eta = learning_schedule(i*self.iterations + j, self.t0, self.t1)
+
                 chosen_datapoints = np.random.choice(data_indices, size=self.batch_size, replace=False)
 
                 self.current_X_data = self.X[chosen_datapoints]
@@ -266,7 +275,6 @@ def epochs_plot(X, y, y_exact, layers, plot_title, max_epochs, lmda, eta, verbos
 
 
 if __name__ == "__main__":
-    t0, t1 = 5, 50 #not used yet
     n = 100
     dim = 1 # Number of polynoms does not seem to give a different result
 
@@ -280,7 +288,7 @@ if __name__ == "__main__":
     y = y_exact + noise
 
     layers = [3,5,3]
-    nn = FeedForwardNeuralNetwork(X, y, layers, 1, 10, epochs=200, eta=0.01, lmbda=0.01, func=sigmoid)
+    nn = FeedForwardNeuralNetwork(X, y, layers, 1, 10, epochs=200, eta=0.3, lmbda=0.01, func=sigmoid)
     nn.train()
 
     #grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy")
