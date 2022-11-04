@@ -1,7 +1,9 @@
 from matplotlib.colors import LogNorm
 import numpy as np
 import matplotlib.pyplot as plt 
-from sklearn.metrics import accuracy_score
+#from sklearn.metrics import accuracy_score
+from sklearn.datasets import load_breast_cancer
+
 
 def MSE(y,y_tilde):
     sum = 0
@@ -45,14 +47,24 @@ def delta_leaky_relu(z):
 def learning_schedule(t, t0, t1):
     return t0/(t+t1)
 
+def accuracy_score_numpy(Y_test, Y_pred):
+    return np.sum(Y_test == Y_pred) / len(Y_test)
 
-
+# one-hot in numpy
+def to_categorical_numpy(integer_vector):
+    n_inputs = len(integer_vector)
+    n_categories = np.max(integer_vector) + 1
+    onehot_vector = np.zeros((n_inputs, n_categories))
+    onehot_vector[range(n_inputs), integer_vector] = 1
+    
+    return onehot_vector
 
 class FeedForwardNeuralNetwork:
-    def __init__(self, X, Y, layers, n_categories = 1, batch_size = 100, eta = 0.1, lmbda = 0.0, epochs = 10, func=sigmoid):
+    def __init__(self, X, Y, layers, n_categories = 1, batch_size = 100, eta = 0.1, lmbda = 0.0, epochs = 10, func=sigmoid, problem="regression"):
         self.X = X
         self.Y = Y
         self.func = func
+        self.problem = problem
         self.n_inputs = X.shape[0] # Samples
         self.n_features = X.shape[1]
         self.n_categories = n_categories
@@ -105,8 +117,14 @@ class FeedForwardNeuralNetwork:
         z = np.matmul(self.a[-1], self.weights[-1]) + self.bias[-1]
         self.z.append(z)
         self.a.append(z)
-    
-        self.probabilities = z
+
+        if self.problem == "regression":
+            self.probabilities = z
+
+        #Asume its classification otherwise
+        else:
+            exp_term = np.exp(z)
+            self.probabilities = exp_term / np.sum(exp_term, axis=1, keepdims=True)
 
 
     def feed_forward_out(self, X):
@@ -125,8 +143,14 @@ class FeedForwardNeuralNetwork:
             a_list.append(a)
             
         z = np.matmul(a_list[-1], self.weights[-1]) + self.bias[-1]
-    
-        return z
+        
+        if self.problem == "regression":
+            return z
+
+        #Asume its classification otherwise
+        else:
+            exp_term = np.exp(z)
+            return exp_term / np.sum(exp_term, axis=1, keepdims=True)
     
     def backpropagation(self):
         error1 = self.probabilities - self.current_Y_data
@@ -274,6 +298,18 @@ def epochs_plot(X, y, y_exact, layers, plot_title, max_epochs, lmda, eta, verbos
     plt.ylabel("MSE")
 
 
+
+def test_classification():    
+    data = load_breast_cancer()
+    X = data.data
+    Y = data.target
+    Y_onehot = to_categorical_numpy(Y)
+    #Important to change n_categories to 2 and problem to anything else than regression
+    nn = FeedForwardNeuralNetwork(X, Y_onehot, layers, 2, 10, epochs=200, eta=0.3, lmbda=0.01, func=sigmoid, problem="classification")
+    nn.train()
+    Y_predict = nn.predict(X)
+    print(accuracy_score_numpy(Y, Y_predict))
+
 if __name__ == "__main__":
     n = 100
     dim = 1 # Number of polynoms does not seem to give a different result
@@ -288,6 +324,10 @@ if __name__ == "__main__":
     y = y_exact + noise
 
     layers = [3,5,3]
+
+    test_classification()
+    """
+    #For å teste regression, ikke slett!
     nn = FeedForwardNeuralNetwork(X, y, layers, 1, 10, epochs=200, eta=0.3, lmbda=0.01, func=sigmoid)
     nn.train()
 
@@ -298,3 +338,4 @@ if __name__ == "__main__":
     plt.plot(x, nn.predict_probabilities(X), label="predict")
     plt.legend()
     plt.show()
+    """
