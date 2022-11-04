@@ -35,6 +35,13 @@ def relu(z):
 def delta_relu(z):
     return np.where(z > 0, 1, 0)
 
+def leaky_relu(z):
+    a = np.maximum(0.01*z, z)
+    return a 
+
+def delta_leaky_relu(z):
+    return np.where(z > 0, 1, 0.01*z)
+
 def learning_schedule(t):
     return t0/(t+t1)
 
@@ -42,9 +49,10 @@ def learning_schedule(t):
 
 
 class FeedForwardNeuralNetwork:
-    def __init__(self, X, Y, layers, n_categories = 1, batch_size = 100, eta = 0.1, lmbda = 0.0, epochs = 10):
+    def __init__(self, X, Y, layers, n_categories = 1, batch_size = 100, eta = 0.1, lmbda = 0.0, epochs = 10, func=sigmoid):
         self.X = X
         self.Y = Y
+        self.func = func
         self.n_inputs = X.shape[0] # Samples
         self.n_features = X.shape[1]
         self.n_categories = n_categories
@@ -84,10 +92,10 @@ class FeedForwardNeuralNetwork:
         for i in range(self.num_layers):
             if i == 0:
                 z = np.matmul(self.current_X_data, self.weights[i]) + self.bias[i]
-                a = sigmoid(z)
+                a = self.func(z)
             else:
                 z = np.matmul(self.a[i-1], self.weights[i]) + self.bias[i]
-                a = sigmoid(z)
+                a = self.func(z)
 
             self.z.append(z)
             self.a.append(a)
@@ -106,10 +114,10 @@ class FeedForwardNeuralNetwork:
         for i in range(self.num_layers):
             if i == 0:
                 z = np.matmul(X, self.weights[i]) + self.bias[i]
-                a = sigmoid(z)
+                a = self.func(z)
             else:
                 z = np.matmul(a_list[i-1], self.weights[i]) + self.bias[i]
-                a = sigmoid(z)
+                a = self.func(z)
 
             z_list.append(z)
             a_list.append(a)
@@ -126,9 +134,22 @@ class FeedForwardNeuralNetwork:
 
         for i in range(self.num_layers):
             if i == 0:
-                error = np.matmul(errors[i], self.weights[self.num_layers].T) * self.a[self.num_layers-1] * (1-self.a[self.num_layers-1])
+                if self.func == sigmoid:
+                    error = np.matmul(errors[i], self.weights[self.num_layers].T) * self.a[self.num_layers-1] * (1-self.a[self.num_layers-1])
+                elif self.func == relu:
+                    error = np.matmul(errors[i], self.weights[self.num_layers].T) * delta_relu(self.z[self.num_layers-1])
+                elif self.func == leaky_relu:
+                    error = np.matmul(errors[i], self.weights[self.num_layers].T) * delta_leaky_relu(self.z[self.num_layers-1])
+
             else:
-                error = np.matmul(errors[i], self.weights[self.num_layers-i].T) * self.a[self.num_layers-i-1] * (1-self.a[self.num_layers-i-1])
+                if self.func == sigmoid:
+                    error = np.matmul(errors[i], self.weights[self.num_layers-i].T) * self.a[self.num_layers-i-1] * (1-self.a[self.num_layers-i-1])
+                elif self.func == relu:
+                    error = np.matmul(errors[i], self.weights[self.num_layers-i].T) * delta_relu(self.z[self.num_layers-1-i])
+                elif self.func == leaky_relu:
+                    error = np.matmul(errors[i], self.weights[self.num_layers-i].T) * delta_leaky_relu(self.z[self.num_layers-1-i])
+
+
             dw = np.matmul(self.a[self.num_layers-1-i].T, errors[i])
             db = np.sum(errors[i], axis=0)
 
@@ -258,12 +279,12 @@ if __name__ == "__main__":
     noise = np.random.normal(0, 0.1, n).reshape(n, 1)
     y = y_exact + noise
 
-    layers = [5, 4, 3]
-    nn = FeedForwardNeuralNetwork(X, y, layers, 1, 10, epochs=200, eta=0.01, lmbda=0.01)
+    layers = [3,5,3]
+    nn = FeedForwardNeuralNetwork(X, y, layers, 1, 10, epochs=200, eta=0.01, lmbda=0.01, func=sigmoid)
     nn.train()
 
-    grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy")
-    epochs_plot(X, y, y_exact, layers, "Epochs", 200, 0.01, 0.01)
+    #grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy")
+    #epochs_plot(X, y, y_exact, layers, "Epochs", 200, 0.01, 0.01)
     plt.figure()
     plt.plot(x, y_exact, label="exact")
     plt.plot(x, nn.predict_probabilities(X), label="predict")
