@@ -5,9 +5,10 @@ import autograd.numpy as np
 import matplotlib.pyplot as plt
 from autograd import grad
 from sklearn.datasets import load_breast_cancer
-
+from sklearn.metrics import confusion_matrix
 
 def accuracy_score_numpy(Y_test, Y_pred):
+    print(confusion_matrix(Y_test, Y_pred))
     return np.sum(Y_test == Y_pred) / len(Y_test)
 
 # one-hot in numpy
@@ -19,9 +20,6 @@ def to_categorical_numpy(integer_vector):
     
     return onehot_vector
     
-def CostOLS(beta,y,X):
-    n = len(y)
-    return (1.0/n)*np.sum((y-X @ beta)**2)
 
 def learning_schedule(t):
     return t0/(t+t1)
@@ -43,107 +41,40 @@ def sigmoid(x):
 
 sigmoid = np.vectorize(sigmoid)
 
-def forward(X, theta):
-    return sigmoid(X @ theta)
-
-
-def LogReg(x,y,Niterations, momentum, M, plot=True):
-    n = len(x)
-    #X = np.c_[np.ones((n,1)), x, x**2]
-    X = designMatrix(x,2)
-
-    sh = X.shape[1]
-
-    
-    theta = np.random.randn(sh,1)
-    eta = 0.1
-    # Including AdaGrad parameter to avoid possible division by zero
-    delta  = 1e-8
-    # define the gradient
-    training_gradient = grad(CostOLS)
-    # Value for parameter rho
-    rho = 0.99
-    change = 0
-    m = int(n/M)
-    for iter in range(Niterations):
-        Giter = np.zeros(shape=(sh,sh))
-        for i in range(m):
-            random_index = np.random.randint(m)*M
-            xi = X[random_index:random_index+M]
-            yi = y[random_index:random_index+M]
-            #Changing eta over time
-            eta = learning_schedule(iter*m+i)
-
-            #gradients = (1.0/M)*training_gradient(theta,yi,xi) + momentum*change
-            gradients = eta / sh *  X.T @ (forward(X, theta) - y) #+ momentum*change
-            # Previous value for the outer product of gradients
-            Previous = Giter
-            # Accumulated gradient
-            Giter +=gradients @ gradients.T
-            # Scaling with rho the new and the previous results
-            Gnew = (rho*Previous+(1-rho)*Giter)
-	        # Simpler algorithm with only diagonal elements
-            
-            Ginverse = np.c_[eta/(delta+np.sqrt(np.diagonal(Gnew)))]
-
-            # compute update
-            change = np.multiply(Ginverse,gradients)
-            theta -= change
-    print("theta from own gd")
-    print(theta)
-    print(theta.shape)
-
-    #xnew = np.array([[0],[2]])
-    xnew = np.linspace(0,2,n)
-    #Xnew = np.c_[np.ones((n,1)), xnew, xnew**2]
-    Xnew = designMatrix(xnew,2)
-
-    ypredict = Xnew.dot(theta)
-    #ypredict2 = Xnew.dot(theta_linreg)
-
-    if plot:
-        plt.plot(xnew, ypredict, "r-")
-        #plt.plot(xnew, ypredict2, "b-")
-        plt.plot(x, y ,'ro')
-        plt.axis([0,2.0,0, 15.0])
-        plt.xlabel(r'$x$')
-        plt.ylabel(r'$y$')
-        plt.title(r'Random numbers ')
-        plt.show()
-    else:
-        return xnew,ypredict
 
 
 class NumpyLogReg:
 
-    def fit(self, X_train, t_train, eta = 0.1, epochs=10, loss_diff = 0, val_set = None):
+    def fit(self, X, y, eta = 0.1, epochs=10, M=5, momentum=0.1):
         """X_train is a Nxm matrix, N data points, m features
         t_train are the targets values for training data"""
         
-        (k, m) = X_train.shape
-        
-        self.weights = weights = np.zeros(m)
+        (k, n) = X.shape
+        self.weights = weights = np.zeros(n)
         
         self.losses = np.zeros(epochs)
-    
-            
-            
-        for e in range(2):
-            weights -= eta / k *  X_train.T @ (self.forward(X_train) - t_train) 
-            #self.losses[e] = self.loss(t_train, X_train)  
-            self.losses[e] = self.loss(t_train, self.forward(X_train))   
-        
-                
 
-        for e in range(2, epochs):
-            self.runs = e+1
-            if (abs(self.losses[e-1] - self.losses[e-2]) > loss_diff):
-                weights -= eta / k *  X_train.T @ (self.forward(X_train) - t_train)                      
-                self.losses[e] = self.loss(t_train, self.forward(X_train))   
-                  
-            else:
-                break
-                
+
+        m = int(k/M)
+             
+        change = 0
+
+
+        for iter in range(epochs):
+            for i in range(m):
+                random_index = np.random.randint(m)*M
+                xi = X[random_index:random_index+M]
+                yi = y[random_index:random_index+M]
+                #Changing eta over time
+                eta = learning_schedule(iter*m+i)
+
+                gradients = eta / k *  xi.T @ (self.forward(xi) - yi) + momentum*change
+
+                change = gradients
+                weights -= change
+
+        self.weights = weights
+            
     def forward(self, X):
         return sigmoid(X @ self.weights)
     
@@ -152,15 +83,17 @@ class NumpyLogReg:
         score = self.forward(z)
         return score
     
-    def predict(self, x, bias = True, threshold=0.5):
+    def predict(self, x, threshold=0.5):
         z = x.copy()
         score = self.forward(z)
         return (score>threshold).astype('int')
     
     def loss(self, y, y_hat):
         loss = -np.mean(y*(np.log(y_hat)) - (1-y)*np.log(1-y_hat))
+
         return loss
 
+    
 
 def test_classification():    
     data = load_breast_cancer()
@@ -169,9 +102,10 @@ def test_classification():
     Y_onehot = to_categorical_numpy(Y)
     #Important to change n_categories to 2 and problem to anything else than regression
     lg = NumpyLogReg()
-    lg.fit(X,Y)
+    lg.fit(X,Y, eta=0.1, epochs=100)
     Y_predict = lg.predict(X)
     print(accuracy_score_numpy(Y, Y_predict))
+
 
 if __name__ == "__main__":
     n = 100 
@@ -179,11 +113,10 @@ if __name__ == "__main__":
     x = np.random.rand(n,1)
     y = 4+3*x + x**2 +np.random.randn(n,1)
 
-    x_exact = np.linspace(0,2,11)
+    x_exact = np.linspace(0,1,n)
     y_exact = 4+3*x_exact + x_exact**2
     #y = 2.0+3*x +4*x*x# +np.random.randn(n,1)
     t0, t1 = 5, 50
-    #LogReg(x,y, 200, 0.1, 5)
     test_classification()
 
     

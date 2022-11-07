@@ -198,7 +198,6 @@ def SGD_Tuned(x,y,Niterations, momentum, M, plot=True):
 	        # Simpler algorithm with only diagonal elements
             
             Ginverse = np.c_[eta/(delta+np.sqrt(np.diagonal(Gnew)))]
-
             # compute update
             change = np.multiply(Ginverse,gradients)
             theta -= change
