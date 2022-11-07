@@ -16,3 +16,11 @@ def create_design_matrix(x, y, max_polynominal):
 			X[:,q+k] = (x**(i-k))*(y**k)
 
 	return X
+
+
+def create_design_matrix_1D(x, max_polynominal):
+    n = len(x) 
+    X = np.ones((n, max_polynominal + 1))      
+    for i in range(1, max_polynominal + 1):
+        X[:,i] = (x**i).ravel()
+    return X

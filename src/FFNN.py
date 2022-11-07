@@ -1,45 +1,10 @@
+from cmath import isnan, nan
 from matplotlib.colors import LogNorm
 import numpy as np
 import matplotlib.pyplot as plt 
-from sklearn.datasets import load_breast_cancer
-
-def MSE(y,y_tilde):
-    sum = 0
-    n = len(y)
-    for i in range(n):
-        sum += (y[i] - y_tilde[i])**2
-    return sum/n
-
-def sigmoid(x):
-    if x >= 0:
-        z = np.exp(-x)
-        return 1 / (1 + z)
-    else:
-        z = np.exp(x)
-        return  z / (1 + z)
-
-sigmoid = np.vectorize(sigmoid)
-
-def designMatrix(x, polygrade):
-    n = len(x) 
-    X = np.ones((n,polygrade+1))      
-    for i in range(1,polygrade+1):
-        X[:,i] = (x**i).ravel()
-    return X
-
-def relu(z):
-    a = np.maximum(0,z)
-    return a
-
-def delta_relu(z):
-    return np.where(z > 0, 1, 0)
-
-def leaky_relu(z):
-    a = np.maximum(0.01*z, z)
-    return a 
-
-def delta_leaky_relu(z):
-    return np.where(z > 0, 1, 0.01*z)
+from mean_square_error import MSE
+from activation_functions import * 
+from design_matrix import *
 
 def learning_schedule(t, t0, t1):
     return t0/(t+t1)
@@ -47,14 +12,6 @@ def learning_schedule(t, t0, t1):
 def accuracy_score_numpy(Y_test, Y_pred):
     return np.sum(Y_test == Y_pred) / len(Y_test)
 
-# one-hot in numpy
-def to_categorical_numpy(integer_vector):
-    n_inputs = len(integer_vector)
-    n_categories = np.max(integer_vector) + 1
-    onehot_vector = np.zeros((n_inputs, n_categories))
-    onehot_vector[range(n_inputs), integer_vector] = 1
-    
-    return onehot_vector
 
 class FeedForwardNeuralNetwork:
     def __init__(self, X, Y, layers, n_categories = 1, batch_size = 100, eta = 0.1, lmbda = 0.0, epochs = 10, func=sigmoid, problem="regression"):
@@ -110,7 +67,7 @@ class FeedForwardNeuralNetwork:
 
             self.z.append(z)
             self.a.append(a)
-            
+
         z = np.matmul(self.a[-1], self.weights[-1]) + self.bias[-1]
         self.z.append(z)
         self.a.append(z)
@@ -118,7 +75,7 @@ class FeedForwardNeuralNetwork:
         if self.problem == "regression":
             self.probabilities = z
 
-        #Asume its classification otherwise
+        #Assume its classification otherwise
         else:
             exp_term = np.exp(z)
             self.probabilities = exp_term / np.sum(exp_term, axis=1, keepdims=True)
@@ -220,36 +177,13 @@ class FeedForwardNeuralNetwork:
                 self.feed_forward()
                 self.backpropagation()
 
-"""
-if __name__ == "__main__":
-    n = 100
-    dims = 1
-    np.random.seed(4)
-    x = np.random.rand(n, 1)
-    y = 4 + 3*x + x ** 2 + np.random.randn(n, 1)
-    X = designMatrix(x,dims)
-    nn = FeedForwardNeuralNetwork(X, y, 3, 1, 10, epochs=1000)
-    nn.train()
-
-    x_exact = np.linspace(0,1,n)
-    x_exact = x_exact.reshape(n,1)
-    y_exact = 4 + 3*x_exact + x_exact**2
-    X_exact = designMatrix(x_exact, dims)
-    y_pred = nn.feed_forward_out(X_exact)
-    print(y_pred)
-    plt.plot(x_exact, y_pred)
-    plt.plot(x_exact,y_exact)
-    plt.show()
-"""
-
-
 def grid_search_hyperparameters(X, y, y_exact, layers, plot_title, func, n_categories = 1, batch_size = 10, epochs = 200, eta_vals = np.logspace(-5, 1, 7), lmd_vals = np.logspace(-5, 1, 7), verbose = False):
 
     mse_values = np.zeros((len(eta_vals), len(lmd_vals)))
 
     for i, eta in enumerate(eta_vals):
         for j, lmd in enumerate(lmd_vals):
-            nn = FeedForwardNeuralNetwork(X, y, layers, n_categories, batch_size, epochs = epochs, eta=eta, lmbda=lmd)
+            nn = FeedForwardNeuralNetwork(X, y, layers, n_categories, batch_size, epochs = epochs, eta = eta, lmbda = lmd, func = func)
             nn.train()
             y_tilde = nn.predict_probabilities(X)
             mse = MSE(y_exact, y_tilde)
@@ -301,32 +235,24 @@ def epochs_plot(X, y, y_exact, layers, plot_title, max_epochs, lmda, eta, func, 
     plt.xlabel("Epoch")
     plt.ylabel("MSE")
     plt.savefig(f"figures/{plot_title}")
-
-def test_classification():    
-    data = load_breast_cancer()
-    X = data.data
-    Y = data.target
-    Y_onehot = to_categorical_numpy(Y)
-    #Important to change n_categories to 2 and problem to anything else than regression
-    nn = FeedForwardNeuralNetwork(X, Y_onehot, layers, 2, 10, epochs=200, eta=0.3, lmbda=0.01, func=sigmoid, problem="classification")
-    nn.train()
-    Y_predict = nn.predict(X)
-    print(accuracy_score_numpy(Y, Y_predict))
+"""
 
 if __name__ == "__main__":
     n = 100
-    dim = 1 # Number of polynoms does not seem to give a different result
-
     np.random.seed(40)
+
     x = np.linspace(0, 1, n)
     x = x.reshape(n, 1)
-    X = designMatrix(x,dim)
+    X = create_design_matrix(x,1)
 
     y_exact = 4 + 3*x + x ** 2 
     noise = np.random.normal(0, 0.1, n).reshape(n, 1)
     y = y_exact + noise
 
-    layers = [3,5,3]
+    layers = [3, 5, 3]
+    
+    grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy (Leaky RELU)", leaky_relu)
+    epochs_plot(X, y, y_exact, layers, "Epochs (Leaky RELU)", 200, 0.01, 0.01, leaky_relu)
 
     grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy (sigmoid)", sigmoid)
     epochs_plot(X, y, y_exact, layers, "Epochs (sigmoid)", 200, 0.01, 0.01, sigmoid)
@@ -334,23 +260,16 @@ if __name__ == "__main__":
     grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy (RELU)", relu)
     epochs_plot(X, y, y_exact, layers, "Epochs (RELU)", 200, 0.01, 0.01, relu)
    
-    grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy (Leaky RELU)", leaky_relu)
-    epochs_plot(X, y, y_exact, layers, "Epochs (Leaky RELU)", 200, 0.01, 0.01, leaky_relu)
-
     test_classification()
-
-    plt.show()
-    
-    """
-    #For å teste regression, ikke slett!
-    nn = FeedForwardNeuralNetwork(X, y, layers, 1, 10, epochs=200, eta=0.3, lmbda=0.01, func=sigmoid)
+    nn = FeedForwardNeuralNetwork(X, y, layers, 1, 10, epochs=1000, eta=0.01, lmbda=0.00001, func=sigmoid)
     nn.train()
 
-    #grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy")
-    #epochs_plot(X, y, y_exact, layers, "Epochs", 200, 0.01, 0.01)
     plt.figure()
-    plt.plot(x, y_exact, label="exact")
-    plt.plot(x, nn.predict_probabilities(X), label="predict")
+    plt.plot(x, y_exact, label="Exact")
+    plt.plot(x, nn.predict_probabilities(X), label="Prediction")
+    plt.savefig("figures/FFNN prediction")
     plt.legend()
     plt.show()
-    """
+
+
+"""
