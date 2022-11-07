@@ -4,6 +4,8 @@ import numpy as np
 import autograd.numpy as np
 import matplotlib.pyplot as plt
 from autograd import grad
+from mean_square_error import MSE
+
 
 def CostOLS(beta,y,X):
     n = len(y)
@@ -162,7 +164,6 @@ def SGD_Tuned(x,y,Niterations, momentum, M, plot=True):
     X = designMatrix(x,2)
 
     sh = X.shape[1]
-    XT_X = X.T @ X
 
     
     theta = np.random.randn(sh,1)
@@ -171,10 +172,13 @@ def SGD_Tuned(x,y,Niterations, momentum, M, plot=True):
     delta  = 1e-8
     # define the gradient
     training_gradient = grad(CostOLS)
+
     # Value for parameter rho
     rho = 0.99
     change = 0
     m = int(n/M)
+
+
     for iter in range(Niterations):
         Giter = np.zeros(shape=(sh,sh))
         for i in range(m):
@@ -185,6 +189,7 @@ def SGD_Tuned(x,y,Niterations, momentum, M, plot=True):
             eta = learning_schedule(iter*m+i)
 
             gradients = (1.0/M)*training_gradient(theta,yi,xi) + momentum*change
+
             # Previous value for the outer product of gradients
             Previous = Giter
             # Accumulated gradient
@@ -209,6 +214,80 @@ def SGD_Tuned(x,y,Niterations, momentum, M, plot=True):
 
     ypredict = Xnew.dot(theta)
     #ypredict2 = Xnew.dot(theta_linreg)
+    print(MSE(y,ypredict))
+    if plot:
+        plt.plot(xnew, ypredict, "r-")
+        #plt.plot(xnew, ypredict2, "b-")
+        plt.plot(x, y ,'ro')
+        plt.axis([0,2.0,0, 15.0])
+        plt.xlabel(r'$x$')
+        plt.ylabel(r'$y$')
+        plt.title(r'Random numbers ')
+        plt.show()
+    else:
+        return xnew,ypredict
+
+
+
+#Added AdaGrad
+def SGD_Ridge(x,y,Niterations, momentum, M, lmbda, plot=True):
+    n = len(x)
+    #X = np.c_[np.ones((n,1)), x, x**2]
+    X = designMatrix(x,2)
+
+    sh = X.shape[1]
+
+    
+    theta = np.random.randn(sh,1)
+    eta = 0.1
+    # Including AdaGrad parameter to avoid possible division by zero
+    delta  = 1e-8
+    # define the gradient
+
+    # Value for parameter rho
+    rho = 0.99
+    change = 0
+    m = int(n/M)
+    
+
+    for iter in range(Niterations):
+        Giter = np.zeros(shape=(sh,sh))
+        for i in range(m):
+            random_index = np.random.randint(m)*M
+            xi = X[random_index:random_index+M]
+            yi = y[random_index:random_index+M]
+            #Changing eta over time
+            eta = learning_schedule(iter*m+i)
+
+            #ridge
+            sum = np.sum((yi - xi@theta) * xi)
+            gradients = -2 * sum + np.dot(2*lmbda, theta)
+
+            # Previous value for the outer product of gradients
+            Previous = Giter
+            # Accumulated gradient
+            Giter +=gradients @ gradients.T
+            # Scaling with rho the new and the previous results
+            Gnew = (rho*Previous+(1-rho)*Giter)
+	        # Simpler algorithm with only diagonal elements
+            
+            Ginverse = np.c_[eta/(delta+np.sqrt(np.diagonal(Gnew)))]
+
+            # compute update
+            change = np.multiply(Ginverse,gradients)
+            theta -= change
+    print("theta from own gd")
+    print(theta)
+    print(theta.shape)
+
+    #xnew = np.array([[0],[2]])
+    xnew = np.linspace(0,1,n)
+    #Xnew = np.c_[np.ones((n,1)), xnew, xnew**2]
+    Xnew = designMatrix(xnew,2)
+
+    ypredict = Xnew.dot(theta)
+    #ypredict2 = Xnew.dot(theta_linreg)
+    print(MSE(y,ypredict))
 
     if plot:
         plt.plot(xnew, ypredict, "r-")
@@ -223,6 +302,9 @@ def SGD_Tuned(x,y,Niterations, momentum, M, plot=True):
         return xnew,ypredict
 
 
+
+
+
 if __name__ == "__main__":
     n = 100 
     np.random.seed(4)
@@ -234,7 +316,8 @@ if __name__ == "__main__":
     #y = 2.0+3*x +4*x*x# +np.random.randn(n,1)
     t0, t1 = 5, 50
     #GD(x,y, 1000, 0.1)
-    #SGD(x,y, 200, 0.1, 5)
+    #SGD_Tuned(x,y, 200, 0.1, 5)
+    SGD_Ridge(x,y, 200, 0.1, 5, lmbda=1)
     
     #Task A.3
     def testSGD():
@@ -292,7 +375,12 @@ if __name__ == "__main__":
                 axs[i,j].legend()
         plt.savefig("figures/A4_OneTuned.png")
         plt.show()
-    test_tuning(x,y)
+    #test_tuning(x,y)
 
 
 
+
+#COMMENTS FOR OVERLEAF
+"""
+-when testing ridge MSE vs OLS MSE we got that OLS had an MSE of 3.5 while Ridge got an MSE of 5.7.
+"""
