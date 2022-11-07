@@ -199,7 +199,6 @@ def SGD_Tuned(x,y,Niterations, momentum, M, plot=True):
 	        # Simpler algorithm with only diagonal elements
             
             Ginverse = np.c_[eta/(delta+np.sqrt(np.diagonal(Gnew)))]
-
             # compute update
             change = np.multiply(Ginverse,gradients)
             theta -= change
@@ -316,8 +315,8 @@ if __name__ == "__main__":
     #y = 2.0+3*x +4*x*x# +np.random.randn(n,1)
     t0, t1 = 5, 50
     #GD(x,y, 1000, 0.1)
-    #SGD_Tuned(x,y, 200, 0.1, 5)
-    SGD_Ridge(x,y, 200, 0.1, 5, lmbda=1)
+    SGD_Tuned(x,y, 200, 0.1, 5)
+    #SGD_Ridge(x,y, 200, 0.1, 5, lmbda=1)
     
     #Task A.3
     def testSGD():
