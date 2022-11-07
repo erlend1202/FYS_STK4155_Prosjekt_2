@@ -1,9 +1,7 @@
 from matplotlib.colors import LogNorm
 import numpy as np
 import matplotlib.pyplot as plt 
-#from sklearn.metrics import accuracy_score
 from sklearn.datasets import load_breast_cancer
-
 
 def MSE(y,y_tilde):
     sum = 0
@@ -11,7 +9,6 @@ def MSE(y,y_tilde):
     for i in range(n):
         sum += (y[i] - y_tilde[i])**2
     return sum/n
-
 
 def sigmoid(x):
     if x >= 0:
@@ -246,7 +243,7 @@ if __name__ == "__main__":
 """
 
 
-def grid_search_hyperparameters(X, y, y_exact, layers, plot_title, n_categories = 1, batch_size = 10, epochs = 200, eta_vals = np.logspace(-5, 1, 7), lmd_vals = np.logspace(-5, 1, 7), verbose = False):
+def grid_search_hyperparameters(X, y, y_exact, layers, plot_title, func, n_categories = 1, batch_size = 10, epochs = 200, eta_vals = np.logspace(-5, 1, 7), lmd_vals = np.logspace(-5, 1, 7), verbose = False):
 
     mse_values = np.zeros((len(eta_vals), len(lmd_vals)))
 
@@ -268,20 +265,27 @@ def grid_search_hyperparameters(X, y, y_exact, layers, plot_title, n_categories 
             new_arr.append(str(element))
         
         return new_arr
+    
+    def show_values_in_heatmap(heatmap, axes, text_color = "white"):
+        for i in range(len(heatmap)):
+            for j in range(len(heatmap[0])):
+                axes.text(j, i, np.round(heatmap[i, j], 2), ha="center", va="center", color=text_color)
 
     labels_x = array_elements_to_string(eta_vals)
     labels_y = array_elements_to_string(lmd_vals)
 
     plt.figure()
+    show_values_in_heatmap(mse_values, plt.gca())
     plt.title(plot_title)
     plt.xticks(np.arange(0, len(eta_vals)), labels_x)
     plt.yticks(np.arange(0, len(lmd_vals)), labels_y)
-    plt.xlabel("$\eta$")
-    plt.ylabel("$\lambda$")
+    plt.xlabel("$\lambda$")
+    plt.ylabel("$\eta$")
     plt.imshow(mse_values, norm=LogNorm())
     plt.colorbar()
+    plt.savefig(f"figures/{plot_title}")
 
-def epochs_plot(X, y, y_exact, layers, plot_title, max_epochs, lmda, eta, verbose = False):
+def epochs_plot(X, y, y_exact, layers, plot_title, max_epochs, lmda, eta, func, verbose = False):
     mse_values = np.zeros(max_epochs)
 
     for epoch in range(max_epochs):
@@ -296,8 +300,7 @@ def epochs_plot(X, y, y_exact, layers, plot_title, max_epochs, lmda, eta, verbos
     plt.plot(mse_values)
     plt.xlabel("Epoch")
     plt.ylabel("MSE")
-
-
+    plt.savefig(f"figures/{plot_title}")
 
 def test_classification():    
     data = load_breast_cancer()
@@ -325,7 +328,19 @@ if __name__ == "__main__":
 
     layers = [3,5,3]
 
+    grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy (sigmoid)", sigmoid)
+    epochs_plot(X, y, y_exact, layers, "Epochs (sigmoid)", 200, 0.01, 0.01, sigmoid)
+
+    grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy (RELU)", relu)
+    epochs_plot(X, y, y_exact, layers, "Epochs (RELU)", 200, 0.01, 0.01, relu)
+   
+    grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy (Leaky RELU)", leaky_relu)
+    epochs_plot(X, y, y_exact, layers, "Epochs (Leaky RELU)", 200, 0.01, 0.01, leaky_relu)
+
     test_classification()
+
+    plt.show()
+    
     """
     #For å teste regression, ikke slett!
     nn = FeedForwardNeuralNetwork(X, y, layers, 1, 10, epochs=200, eta=0.3, lmbda=0.01, func=sigmoid)
