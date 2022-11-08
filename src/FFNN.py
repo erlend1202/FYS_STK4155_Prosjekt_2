@@ -315,6 +315,7 @@ def test_classification():
 
 if __name__ == "__main__":
     n = 100
+
     dim = 1 # Number of polynoms does not seem to give a different result
 
     np.random.seed(40)
