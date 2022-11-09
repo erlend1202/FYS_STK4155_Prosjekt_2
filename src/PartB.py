@@ -15,9 +15,9 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(X, z.ravel(), test_size=0.2)
     y_train = y_train.reshape(-1, 1)
     y_test = y_test.reshape(-1, 1)
-    layers = [5, 4, 3]
+    layers = [10]
 
-    grid_search_hyperparameters(X_train, y_train, y_train, layers, "Training accuracy (sigmoid)", sigmoid)
+    grid_search_hyperparameters(X_train, X_test, y_train, y_test, layers, "Training accuracy (sigmoid)", sigmoid, verbose=True)
     epochs_plot(X_train, y_train, y_train, layers, "Epochs (sigmoid)", 50, 0.01, 0.01, sigmoid)
 
     nn = FeedForwardNeuralNetwork(X_train, y_train, layers, 1, 10, epochs=200, eta=0.01, lmbda=0.01)

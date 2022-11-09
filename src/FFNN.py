@@ -14,7 +14,7 @@ def accuracy_score_numpy(Y_test, Y_pred):
 
 
 class FeedForwardNeuralNetwork:
-    def __init__(self, X, Y, layers, n_categories = 1, batch_size = 100, eta = 0.1, lmbda = 0.0, epochs = 10, func=sigmoid, problem="regression"):
+    def __init__(self, X, Y, layers, n_categories = 1, batch_size = 5, eta = 0.1, lmbda = 0.0, epochs = 10, func=sigmoid, problem="regression"):
         self.X = X
         self.Y = Y
         self.func = func
@@ -177,16 +177,16 @@ class FeedForwardNeuralNetwork:
                 self.feed_forward()
                 self.backpropagation()
 
-def grid_search_hyperparameters(X, y, y_exact, layers, plot_title, func, n_categories = 1, batch_size = 10, epochs = 200, eta_vals = np.logspace(-5, 1, 7), lmd_vals = np.logspace(-5, 1, 7), verbose = False):
+def grid_search_hyperparameters(X_train, X_test, y_train, y_test, layers, plot_title, func, n_categories = 1, batch_size = 5, epochs = 5, eta_vals = np.logspace(-5, 1, 7), lmd_vals = np.logspace(-5, 1, 7), verbose = False):
 
     mse_values = np.zeros((len(eta_vals), len(lmd_vals)))
 
     for i, eta in enumerate(eta_vals):
         for j, lmd in enumerate(lmd_vals):
-            nn = FeedForwardNeuralNetwork(X, y, layers, n_categories, batch_size, epochs = epochs, eta = eta, lmbda = lmd, func = func)
+            nn = FeedForwardNeuralNetwork(X_train, y_train, layers, n_categories, batch_size, epochs = epochs, eta = eta, lmbda = lmd, func = func)
             nn.train()
-            y_tilde = nn.predict_probabilities(X)
-            mse = MSE(y_exact, y_tilde)
+            y_tilde = nn.predict_probabilities(X_test)
+            mse = MSE(y_test, y_tilde)
             mse_values[i, j] = mse
 
             if verbose:
