@@ -30,6 +30,7 @@ class FeedForwardNeuralNetwork:
         self.layers = layers 
         self.num_layers = len(layers)
 
+
         #for eta
         self.t0, self.t1 = 5, 50
         # Creating biases and weights with initial values
@@ -143,11 +144,10 @@ class FeedForwardNeuralNetwork:
         self.w_grads.append(dw)
         self.bias_grads.append(db)
 
-        #self.w_grad = np.array(self.w_grads)
-        #self.bias_grads = np.array(self.bias_grads)
 
         if self.lmbda > 0:
-            self.w_grads += np.multiply(self.w_grads, self.lmbda, dtype=object)
+            for i in range(self.num_layers+1):
+                self.w_grads[i] += self.w_grads[i]*self.lmbda
 
         for i in range(self.num_layers+1):
             self.weights[i] -= self.eta * self.w_grads[self.num_layers-i]
