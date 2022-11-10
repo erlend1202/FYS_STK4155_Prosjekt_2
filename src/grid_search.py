@@ -2,7 +2,6 @@ from FFNN import FeedForwardNeuralNetwork
 from mean_square_error import MSE
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
 from sklearn.datasets import load_breast_cancer
 from activation_functions import *
 from sklearn.model_selection import train_test_split
@@ -10,60 +9,7 @@ from to_categorical import *
 from logistic_regression import *
 from SGD import *
 from accuracy_score import accuracy_score
-
-def create_logarithmic_heatmap_plot(plot_title, x_label, y_label, heatmap, x_axis_values, y_axis_values, value_text_in_cells = True):
-    """
-    Creating a matplotlib plot of a heatmap. Will colors in the logarithmic scale.
-
-    Parameters
-    ----------
-    plot_title: str
-        The title text in the plot. Also the filename when saving the plot to disk.
-    x_label: str
-        The x axis label in the plot.
-    y_label: str
-        The y axis label in the plot.
-    heatmap: np.ndarray
-        A numpy matrix holding the values for the heatmap. Should be a 2 dimentional ndarray.
-    x_axis_values: np.array
-        A numpy array holding each value for each iteration on the x axis.
-    y_axis_values: np.array
-        A numpy array holding eeach value of each iteration on the y axis.
-    value_text_in_cells: boolean
-        Defaults to true. Determiting if each cell in the heatmap image should have it's value printed as text in the cell.
-    """
-
-    # Inner function for converting an array with numerical elements to an array with strings
-    def array_elements_to_string(arr):
-        new_arr = []
-
-        for element in arr:
-            new_arr.append(str(element))
-        
-        return new_arr
-    
-    labels_x = array_elements_to_string(x_axis_values)
-    labels_y = array_elements_to_string(y_axis_values)
-
-    plt.figure()
-
-    # Create value text in each cell in the heatmap
-    if value_text_in_cells:
-        for i in range(len(heatmap)):
-            for j in range(len(heatmap[0])):
-                plt.gca().text(j, i, np.round(heatmap[i, j], 2), ha="center", va="center", color="white")
-
-    plt.title(plot_title)
-
-    # Setting the correct values at the axes.
-    plt.xticks(np.arange(0, len(x_axis_values)), labels_x)
-    plt.yticks(np.arange(0, len(y_axis_values)), labels_y)
-
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
-    plt.imshow(heatmap, norm=LogNorm())
-    plt.colorbar()
-    plt.savefig(f"figures/{plot_title}")
+from logarithmic_heatmap_plot import create_logarithmic_heatmap_plot
 
 def grid_search_hyperparameters_ridge(x, y, y_exact, plot_title, func, lambdas = np.logspace(-5,1,7), epochs = np.linspace(10,190,7, dtype='int'), verbose = False):
     """
@@ -146,7 +92,7 @@ def grid_search_hyperparameters_SGD_epochs(x, y, y_exact, plot_title, func, batc
     
     create_logarithmic_heatmap_plot(plot_title, "$Batch size$", "$Epochs$", mse_values, batch_size, epochs, True)
 
-def grid_search_hyperparameters_SGD(x, y, y_exact, plot_title, func, verbose = False):
+def grid_search_hyperparameters_SGD(x, y, z, plot_title, func, verbose = False):
     """
     Doing a grid seach over the learning rate and the momentum in with the SGD algorithm. Then creating a heatmap with the different MSE results for each learning rate and momentum.
 
@@ -176,9 +122,9 @@ def grid_search_hyperparameters_SGD(x, y, y_exact, plot_title, func, verbose = F
     for i, mom in enumerate(momentums):
         for j, eta in enumerate(learning_rates):
             if func == SGD_Tuned or func == SGD:
-                xnew, y_tilde = func(x,y, Niterations=20, momentum=mom, M=5, eta=eta, plot=False)
+                xnew, y_tilde = func(x,y, z Niterations=20, momentum=mom, M=5, eta=eta, plot=False)
             else:
-                xnew,y_tilde = func(x,y, Niterations=20, momentum=mom, eta=eta, plot=False)
+                xnew,y_tilde = func(x,y,z, Niterations=20, momentum=mom, eta=eta, plot=False)
             mse = MSE(y_exact, y_tilde)
             mse_values[i, j] = mse
 

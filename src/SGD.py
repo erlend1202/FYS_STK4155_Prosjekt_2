@@ -15,10 +15,11 @@ def learning_schedule(t):
     t0, t1 = 5, 50
     return t0/(t+t1)
 
-def GD(x,y,Niterations, momentum, eta=0.1, plot=True):
+def GD(x,y,z,Niterations, momentum, eta=0.1, plot=True):
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
-    X = create_design_matrix_1D(x,2)
+    X = create_design_matrix(x, y, 2)
+
     sh = X.shape[1]
     
     XT_X = X.T @ X
@@ -52,10 +53,11 @@ def GD(x,y,Niterations, momentum, eta=0.1, plot=True):
         return xnew,ypredict
 
 
-def SGD(x,y,Niterations, momentum, M, eta=0.1, plot=True):
+def SGD(x,y,z,Niterations, momentum, M, eta=0.1, plot=True):
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
-    X = create_design_matrix_1D(x,2)
+    #X = create_design_matrix_1D(x,2)
+    X = x
 
     XT_X = X.T @ X
     sh = X.shape[1]
@@ -97,10 +99,11 @@ def SGD(x,y,Niterations, momentum, M, eta=0.1, plot=True):
 
 
 #Added AdaGrad
-def GD_Tuned(x,y,Niterations, momentum, eta=0.1, plot=True):
+def GD_Tuned(x,y,z,Niterations, momentum, eta=0.1, plot=True):
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
-    X = create_design_matrix_1D(x,2)
+    #X = create_design_matrix_1D(x,2)
+    X = x
 
     sh = X.shape[1]
     XT_X = X.T @ X
@@ -146,10 +149,11 @@ def GD_Tuned(x,y,Niterations, momentum, eta=0.1, plot=True):
         return xnew,ypredict
 
 #Added AdaGrad
-def SGD_Tuned(x,y,Niterations, momentum, M=5, eta=0.1, plot=True):
+def SGD_Tuned(x,y,z, Niterations, momentum, M=5, eta=0.1, plot=True):
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
-    X = create_design_matrix_1D(x,2)
+    #X = create_design_matrix_1D(x,2)
+    X = x
 
     sh = X.shape[1]
 
@@ -212,10 +216,11 @@ def SGD_Tuned(x,y,Niterations, momentum, M=5, eta=0.1, plot=True):
 
 
 #Added AdaGrad
-def SGD_Ridge(x,y,Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
+def SGD_Ridge(x,y,z, Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
-    X = create_design_matrix_1D(x,2)
+    #X = create_design_matrix_1D(x,2)
+    X = x
 
     sh = X.shape[1]
 
@@ -281,7 +286,7 @@ def SGD_Ridge(x,y,Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
     #testSGD()
     #Best values: Momentum = 0.1, batch size = 5, iterations = 200-1000 seems suitable enough
 
-def test_tuning(x,y, x_exact, y_exact):
+def test_tuning(x,y, z, x_exact, y_exact):
     fig, axs = plt.subplots(2,2)
     functions = [GD, GD_Tuned, SGD, SGD_Tuned]
     count = 0
