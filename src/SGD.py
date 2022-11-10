@@ -29,13 +29,14 @@ def GD(x,y,z,Niterations, momentum, eta=0.1, plot=True):
     training_gradient = grad(CostOLS)
     change = 0
     for iter in range(Niterations):
-        gradients = training_gradient(theta,y,X) + momentum*change
+        gradients = training_gradient(theta,z,X) + momentum*change
         #eta = learning_schedule(iter)
         change = eta*gradients
         theta -= change
 
     xnew = np.linspace(0,1,n)
     Xnew = create_design_matrix_1D(xnew,2)
+    Xnew = create_design_matrix(x, y, 2)
     ypredict = Xnew.dot(theta)
 
     if plot:    
@@ -57,7 +58,9 @@ def SGD(x,y,z,Niterations, momentum, M, eta=0.1, plot=True):
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
     #X = create_design_matrix_1D(x,2)
-    X = x
+    X = create_design_matrix(x, y, 2)
+    y = z
+
 
     XT_X = X.T @ X
     sh = X.shape[1]
@@ -79,6 +82,7 @@ def SGD(x,y,z,Niterations, momentum, M, eta=0.1, plot=True):
 
     xnew = np.linspace(0,1,n)
     Xnew = create_design_matrix_1D(xnew,2)
+    Xnew = create_design_matrix(x, y, 2)
     ypredict = Xnew.dot(theta)
 
     if plot:
@@ -103,7 +107,10 @@ def GD_Tuned(x,y,z,Niterations, momentum, eta=0.1, plot=True):
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
     #X = create_design_matrix_1D(x,2)
-    X = x
+    X = create_design_matrix(x, y, 2)
+    y = z
+
+
 
     sh = X.shape[1]
     XT_X = X.T @ X
@@ -130,6 +137,7 @@ def GD_Tuned(x,y,z,Niterations, momentum, eta=0.1, plot=True):
 
     xnew = np.linspace(0,1,n)
     Xnew = create_design_matrix_1D(xnew,2)
+    Xnew = create_design_matrix(x, y, 2)
 
     ypredict = Xnew.dot(theta)
 
@@ -153,7 +161,7 @@ def SGD_Tuned(x,y,z, Niterations, momentum, M=5, eta=0.1, plot=True):
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
     #X = create_design_matrix_1D(x,2)
-    X = x
+    X = create_design_matrix(x, y, 2)
 
     sh = X.shape[1]
 
@@ -174,7 +182,7 @@ def SGD_Tuned(x,y,z, Niterations, momentum, M=5, eta=0.1, plot=True):
         for i in range(m):
             random_index = np.random.randint(m)*M
             xi = X[random_index:random_index+M]
-            yi = y[random_index:random_index+M]
+            yi = z[random_index:random_index+M]
             #Changing eta over time
             eta = learning_schedule(iter*m+i)
 
@@ -195,6 +203,7 @@ def SGD_Tuned(x,y,z, Niterations, momentum, M=5, eta=0.1, plot=True):
 
     xnew = np.linspace(0,1,n)
     Xnew = create_design_matrix_1D(xnew,2)
+    Xnew = create_design_matrix(x, y, 2)
     ypredict = Xnew.dot(theta)
     
 
@@ -220,7 +229,8 @@ def SGD_Ridge(x,y,z, Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
     #X = create_design_matrix_1D(x,2)
-    X = x
+    X = create_design_matrix(x, y, 2)
+    y = z
 
     sh = X.shape[1]
 

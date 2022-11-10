@@ -112,6 +112,7 @@ def grid_search_hyperparameters_SGD(x, y, z, plot_title, func, verbose = False):
     verbose: boolean
         Defaults to false. If true, each value produces for each iteration will be printed to the console. 
     """
+
     if func == GD:
         learning_rates = np.logspace(-5,-1,5)
         momentums = np.logspace(-5,-1,5)
@@ -123,10 +124,10 @@ def grid_search_hyperparameters_SGD(x, y, z, plot_title, func, verbose = False):
     for i, mom in enumerate(momentums):
         for j, eta in enumerate(learning_rates):
             if func == SGD_Tuned or func == SGD:
-                xnew, y_tilde = func(x,y, z Niterations=20, momentum=mom, M=5, eta=eta, plot=False)
+                xnew, y_tilde = func(x, y, z, Niterations=20, momentum=mom, M=5, eta=eta, plot=False)
             else:
-                xnew,y_tilde = func(x,y,z, Niterations=20, momentum=mom, eta=eta, plot=False)
-            mse = MSE(y_exact, y_tilde)
+                xnew,y_tilde = func(x, y, z, Niterations=20, momentum=mom, eta=eta, plot=False)
+            mse = MSE(z, y_tilde)
             mse_values[i, j] = mse
 
             if verbose:

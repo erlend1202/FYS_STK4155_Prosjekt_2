@@ -2,6 +2,7 @@ from SGD import *
 from matplotlib.colors import LogNorm
 from grid_search import *
 from sample_data import *
+
 if __name__ == "__main__":
 
     """
@@ -24,6 +25,7 @@ if __name__ == "__main__":
     #SGD_Ridge(x,y, 200, 0.1, 5, lmbda=1)
     """
     x, y, z = create_data_samples(DataSamplesType.TEST)
+    z = z.ravel()
 
     #Task A.3
     def testSGD():
