@@ -82,8 +82,11 @@ class FeedForwardNeuralNetwork:
         b = np.zeros(self.n_categories) + 0.01
         self.weights.append(w)
         self.bias.append(b)
-             
-    
+
+        #Changing from list to array 
+        self.weights = np.array(self.weights)
+        self.bias = np.array(self.bias)
+
     def feed_forward(self): 
         """
             The feed forward stage in the neural network. 
@@ -196,7 +199,6 @@ class FeedForwardNeuralNetwork:
         for i in range(self.num_layers+1):
             self.weights[i] -= self.eta * self.w_grads[self.num_layers-i]
             self.bias[i] -= self.eta * self.bias_grads[self.num_layers-i]
-
 
     def predict(self, X):
         """

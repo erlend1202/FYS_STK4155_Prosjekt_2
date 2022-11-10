@@ -33,3 +33,4 @@ if __name__ == "__main__":
     # Creating plots
     grid_search_hyperparameters_log_reg(X_train, X_test, Y_train, Y_test, "Training_accuracy_Logistic", verbose=True)
     epochs_plot_log_reg(X_train, X_test, Y_train, Y_test, "Epochs_Logistic", 200, verbose=True)
+    grid_search_hyperparameters_scikit(X_train, X_test, Y_train, Y_test, "Training accuracy logreg (scikit)", verbose=True)

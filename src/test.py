@@ -1,114 +1,97 @@
 import numpy as np
-import matplotlib.pyplot as plt 
-
-def MSE(y,y_tilde):
-    sum = 0
-    n = len(y)
-    for i in range(n):
-        sum += (y[i] - y_tilde[i])**2
-    return sum/n
-
-def sigmoid(x):
-    return 1/(1 + np.exp(-x))
-
-def sigmoid(x):
-    if x >= 0:
-        z = np.exp(-x)
-        return 1 / (1 + z)
-    else:
-        z = np.exp(x)
-        return  z / (1 + z)
-
-def designMatrix(x, polygrade):
-    n = len(x) 
-    X = np.ones((n,polygrade+1))      
-    for i in range(1,polygrade+1):
-        X[:,i] = (x**i).ravel()
-    return X
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_boston
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 
 def relu(z):
     a = np.maximum(0,z)
     return a
 
-def delta_relu(z):
-    return np.where(z > 0, 1, 0)
+def initialize_params(layer_sizes):
+    params = {}
+    for i in range(1, len(layer_sizes)):
+        params['W' + str(i)] = np.random.randn(layer_sizes[i], layer_sizes[i-1])*0.01
+        params['B' + str(i)] = np.random.randn(layer_sizes[i],1)*0.01
+    return params
 
-def learning_schedule(t):
-    return t0/(t+t1)
+def forward_propagation(X_train, params):
+    layers = len(params)//2
+    values = {}
+    for i in range(1, layers+1):
+        if i==1:
+            values['Z' + str(i)] = np.dot(params['W' + str(i)], X_train) + params['B' + str(i)]
+            values['A' + str(i)] = relu(values['Z' + str(i)])
+        else:
+            values['Z' + str(i)] = np.dot(params['W' + str(i)], values['A' + str(i-1)]) + params['B' + str(i)]
+            if i==layers:
+                values['A' + str(i)] = values['Z' + str(i)]
+            else:
+                values['A' + str(i)] = relu(values['Z' + str(i)])
+    return values
 
-t0, t1 = 5, 50
+def compute_cost(values, Y_train):
+    layers = len(values)//2
+    Y_pred = values['A' + str(layers)]
+    cost = 1/(2*len(Y_train)) * np.sum(np.square(Y_pred - Y_train))
+    return cost
 
-n = 1000
-np.random.seed(4)
-x = np.random.rand(n,1)
-#x = np.linspace(0,1,n)
-#x = x.reshape(n,1)
-y = 4+3*x + 5*x**2 + np.random.randn(n,1)
+def backward_propagation(params, values, X_train, Y_train):
+    layers = len(params)//2
+    m = len(Y_train)
+    grads = {}
+    for i in range(layers,0,-1):
+        if i==layers:
+            dA = 1/m * (values['A' + str(i)] - Y_train)
+            dZ = dA
+        else:
+            dA = np.dot(params['W' + str(i+1)].T, dZ)
+            dZ = np.multiply(dA, np.where(values['A' + str(i)]>=0, 1, 0))
+        if i==1:
+            grads['W' + str(i)] = 1/m * np.dot(dZ, X_train.T)
+            grads['B' + str(i)] = 1/m * np.sum(dZ, axis=1, keepdims=True)
+        else:
+            grads['W' + str(i)] = 1/m * np.dot(dZ,values['A' + str(i-1)].T)
+            grads['B' + str(i)] = 1/m * np.sum(dZ, axis=1, keepdims=True)
+    return grads
 
-x_exact = np.linspace(0,1,n)
-y_exact = 4+3*x_exact + 5*x_exact**2
+def update_params(params, grads, learning_rate):
+    layers = len(params)//2
+    params_updated = {}
+    for i in range(1,layers+1):
+        params_updated['W' + str(i)] = params['W' + str(i)] - learning_rate * grads['W' + str(i)]
+        params_updated['B' + str(i)] = params['B' + str(i)] - learning_rate * grads['B' + str(i)]
+    return params_updated
 
-X = designMatrix(x,2)
-Y = y
-eta = 3
+def model(X_train, Y_train, layer_sizes, num_iters, learning_rate):
+    params = initialize_params(layer_sizes)
+    for i in range(num_iters):
+        values = forward_propagation(X_train.T, params)
+        cost = compute_cost(values, Y_train.T)
+        grads = backward_propagation(params, values,X_train.T, Y_train.T)
+        params = update_params(params, grads, learning_rate)
+        print('Cost at iteration ' + str(i+1) + ' = ' + str(cost) + '\n')
+    return params
 
-n_inputs, n_features = X.shape
-n_hidden = 5 
-n_output = 1
+def compute_accuracy(X_train, X_test, Y_train, Y_test, params):
+    values_train = forward_propagation(X_train.T, params)
+    values_test = forward_propagation(X_test.T, params)
+    train_acc = np.sqrt(mean_squared_error(Y_train, values_train['A' + str(len(layer_sizes)-1)].T))
+    test_acc = np.sqrt(mean_squared_error(Y_test, values_test['A' + str(len(layer_sizes)-1)].T))
+    return train_acc, test_acc
 
+def predict(X, params):
+    values = forward_propagation(X.T, params)
+    predictions = values['A' + str(len(values)//2)].T
+    return predictions
 
-w1 = np.random.rand(n_features, 3)
-w2 = np.random.rand(3, 8)
-w3 = np.random.rand(8, 1)
-
-b1 = np.zeros(3) + 0.001
-b2 = np.zeros(8) + 0.001
-b3 = np.zeros(1) + 0.001
-
-
-for i in range(1000):
-    A = relu(X@w1 + b1)
-    B = relu(A@w2 + b2)
-    Y_pred = B@w3 + b3
-
-    #Backwards phase
-    #dY_pred = 1/n * MSE(Y,Y_pred)
-    dY_pred = 2/n * np.sum(Y_pred - Y)
-    dw3 = 1/n * dY_pred * w3
-    #print(w3.shape, dw3.shape)
-    db3 = 1/n * np.sum(dY_pred)
-    dB = dY_pred * w3.T
-    dw2 = 1/n * dB * w2
-    #print(w2.shape, dw2.shape)
-    db2 = 1/n * np.sum(dB)
-
-    #Surr herfra
-    dA = dB * w2 @ np.sum(delta_relu(A@w2 + b2),axis = 0)/n 
-    dw1 = 1/n * dA * w1
-    db1 = 1/n * np.sum(dA)
-
-    w1 -= eta*dw1
-    w2 -= eta*dw2
-    w3 -= eta*dw3
-
-    b1 -= eta*db1 
-    b2 -= eta*db2 
-    b3 -= eta*db3 
-    
-    eta = learning_schedule(i)
-
-
-print(MSE(Y,Y_pred))
-
-X_exact = designMatrix(x_exact, 2)
-
-A = relu(X_exact@w1 + b1)
-B = relu(A@w2 + b2)
-Y_pred = B@w3 + b3
-
-plt.plot(x_exact,Y_pred, label="prediction")
-#plt.plot(x_exact,y, label ="noise")
-plt.plot(x_exact,y_exact, label ="exact")
-
-plt.legend()
-plt.show()
+data = load_boston()                                                              #load dataset
+X,Y = data["data"], data["target"]                                                #separate data into input and output features
+X_train,X_test,Y_train,Y_test = train_test_split(X, Y, test_size = 0.2)           #split data into train and test sets in 80-20 ratio
+layer_sizes = [13, 5, 5, 1]                                                       #set layer sizes, do not change the size of the first and last layer 
+num_iters = 1000                                                                  #set number of iterations over the training set(also known as epochs in batch gradient descent context)
+learning_rate = 0.03                                                              #set learning rate for gradient descent
+params = model(X_train, Y_train, layer_sizes, num_iters, learning_rate)           #train the model
+train_acc, test_acc = compute_accuracy(X_train, X_test, Y_train, Y_test, params)  #get training and test accuracy
+print('Root Mean Squared Error on Training Data = ' + str(train_acc))
+print('Root Mean Squared Error on Test Data = ' + str(test_acc))
