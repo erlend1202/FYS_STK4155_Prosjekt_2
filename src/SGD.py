@@ -1,10 +1,11 @@
 # Using Autograd to calculate gradients for OLS
 from random import random, seed
 import numpy as np
-import autograd.numpy as np
 import matplotlib.pyplot as plt
 from autograd import grad
 from mean_square_error import MSE
+from design_matrix import * 
+import autograd.numpy as np
 
 def CostOLS(beta,y,X):
     n = len(y)
@@ -14,19 +15,10 @@ def learning_schedule(t):
     t0, t1 = 5, 50
     return t0/(t+t1)
 
-
-
-def designMatrix(x, polygrade):
-    n = len(x) 
-    X = np.ones((n,polygrade+1))      
-    for i in range(1,polygrade+1):
-        X[:,i] = (x**i).ravel()
-    return X
-
 def GD(x,y,Niterations, momentum, eta=0.1, plot=True):
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
-    X = designMatrix(x,2)
+    X = create_design_matrix_1D(x,2)
     sh = X.shape[1]
     
     XT_X = X.T @ X
@@ -42,12 +34,12 @@ def GD(x,y,Niterations, momentum, eta=0.1, plot=True):
         theta -= change
 
     xnew = np.linspace(0,1,n)
-    Xnew = designMatrix(xnew,2)
+    Xnew = create_design_matrix_1D(xnew,2)
     ypredict = Xnew.dot(theta)
 
     if plot:    
         xnew = np.linspace(0,2,n)
-        Xnew = designMatrix(xnew,2)
+        Xnew = create_design_matrix_1D(xnew,2)
         ypredict = Xnew.dot(theta)
         plt.plot(xnew, ypredict, "r-")
         plt.plot(x, y ,'ro')
@@ -63,7 +55,7 @@ def GD(x,y,Niterations, momentum, eta=0.1, plot=True):
 def SGD(x,y,Niterations, momentum, M, eta=0.1, plot=True):
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
-    X = designMatrix(x,2)
+    X = create_design_matrix_1D(x,2)
 
     XT_X = X.T @ X
     sh = X.shape[1]
@@ -84,12 +76,12 @@ def SGD(x,y,Niterations, momentum, M, eta=0.1, plot=True):
             theta -= change
 
     xnew = np.linspace(0,1,n)
-    Xnew = designMatrix(xnew,2)
+    Xnew = create_design_matrix_1D(xnew,2)
     ypredict = Xnew.dot(theta)
 
     if plot:
         xnew = np.linspace(0,2,n)
-        Xnew = designMatrix(xnew,2)
+        Xnew = create_design_matrix_1D(xnew,2)
         ypredict = Xnew.dot(theta)
 
         plt.plot(xnew, ypredict, "r-")
@@ -108,7 +100,7 @@ def SGD(x,y,Niterations, momentum, M, eta=0.1, plot=True):
 def GD_Tuned(x,y,Niterations, momentum, eta=0.1, plot=True):
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
-    X = designMatrix(x,2)
+    X = create_design_matrix_1D(x,2)
 
     sh = X.shape[1]
     XT_X = X.T @ X
@@ -134,13 +126,13 @@ def GD_Tuned(x,y,Niterations, momentum, eta=0.1, plot=True):
         theta -= change
 
     xnew = np.linspace(0,1,n)
-    Xnew = designMatrix(xnew,2)
+    Xnew = create_design_matrix_1D(xnew,2)
 
     ypredict = Xnew.dot(theta)
 
     if plot:
         xnew = np.linspace(0,2,n)
-        Xnew = designMatrix(xnew,2)
+        Xnew = create_design_matrix_1D(xnew,2)
 
         ypredict = Xnew.dot(theta)
         plt.plot(xnew, ypredict, "r-")
@@ -157,11 +149,10 @@ def GD_Tuned(x,y,Niterations, momentum, eta=0.1, plot=True):
 def SGD_Tuned(x,y,Niterations, momentum, M=5, eta=0.1, plot=True):
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
-    X = designMatrix(x,2)
+    X = create_design_matrix_1D(x,2)
 
     sh = X.shape[1]
 
-    
     theta = np.random.randn(sh,1)
     # Including AdaGrad parameter to avoid possible division by zero
     delta  = 1e-8
@@ -199,13 +190,13 @@ def SGD_Tuned(x,y,Niterations, momentum, M=5, eta=0.1, plot=True):
             theta -= change
 
     xnew = np.linspace(0,1,n)
-    Xnew = designMatrix(xnew,2)
+    Xnew = create_design_matrix_1D(xnew,2)
     ypredict = Xnew.dot(theta)
     
 
     if plot:
         xnew = np.linspace(0,2,n)
-        Xnew = designMatrix(xnew,2)
+        Xnew = create_design_matrix_1D(xnew,2)
         ypredict = Xnew.dot(theta)
     
         plt.plot(xnew, ypredict, "r-")
@@ -224,7 +215,7 @@ def SGD_Tuned(x,y,Niterations, momentum, M=5, eta=0.1, plot=True):
 def SGD_Ridge(x,y,Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
-    X = designMatrix(x,2)
+    X = create_design_matrix_1D(x,2)
 
     sh = X.shape[1]
 
@@ -268,13 +259,13 @@ def SGD_Ridge(x,y,Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
             theta -= change
 
     xnew = np.linspace(0,1,n)
-    Xnew = designMatrix(xnew,2)
+    Xnew = create_design_matrix_1D(xnew,2)
     ypredict = Xnew.dot(theta)
 
     if plot:
             
         xnew = np.linspace(0,2,n)
-        Xnew = designMatrix(xnew,2)
+        Xnew = create_design_matrix_1D(xnew,2)
         ypredict = Xnew.dot(theta)
         plt.plot(xnew, ypredict, "r-")
         #plt.plot(xnew, ypredict2, "b-")
@@ -286,11 +277,6 @@ def SGD_Ridge(x,y,Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
         plt.show()
     else:
         return xnew,ypredict
-
-
-
-
-
         
     #testSGD()
     #Best values: Momentum = 0.1, batch size = 5, iterations = 200-1000 seems suitable enough
@@ -318,9 +304,6 @@ def test_tuning(x,y, x_exact, y_exact):
     plt.show()
 
     #test_tuning(x,y)
-
-
-
 
 #COMMENTS FOR OVERLEAF
 """

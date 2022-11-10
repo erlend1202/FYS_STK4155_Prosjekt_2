@@ -1,5 +1,3 @@
-# Code taken from project 1
-
 from enum import Enum
 from imageio import imread
 import numpy as np

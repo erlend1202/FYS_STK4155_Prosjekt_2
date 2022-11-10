@@ -1,183 +1,6 @@
 from SGD import *
-import numpy as np
 from matplotlib.colors import LogNorm
-
-
-def grid_search_hyperparameters(x, y, y_exact, plot_title, func, verbose = False):
-    if func == GD:
-        learning_rates = np.logspace(-5,-1,5)
-        momentums = np.logspace(-5,-1,5)
-    else:
-        learning_rates = np.logspace(-5,1,7)
-        momentums = np.logspace(-5,1,7)
-    mse_values = np.zeros((len(momentums), len(learning_rates)))
-
-    for i, mom in enumerate(momentums):
-        for j, eta in enumerate(learning_rates):
-            if func == SGD_Tuned or func == SGD:
-                xnew,y_tilde = func(x,y, Niterations=20, momentum=mom, M=5, eta=eta, plot=False)
-            else:
-                xnew,y_tilde = func(x,y, Niterations=20, momentum=mom, eta=eta, plot=False)
-            mse = MSE(y_exact, y_tilde)
-            mse_values[i, j] = mse
-
-            if verbose:
-                print(f"eta:{eta}, momentum:{mom} gives mse {mse}")
-
-    def array_elements_to_string(arr):
-        new_arr = []
-
-        for element in arr:
-            new_arr.append(str(element))
-        
-        return new_arr
-    
-    def show_values_in_heatmap(heatmap, axes, text_color = "white"):
-        for i in range(len(heatmap)):
-            for j in range(len(heatmap[0])):
-                axes.text(j, i, np.round(heatmap[i, j], 2), ha="center", va="center", color=text_color)
-
-    labels_x = array_elements_to_string(learning_rates)
-    labels_y = array_elements_to_string(momentums)
-
-    plt.figure()
-    show_values_in_heatmap(mse_values, plt.gca())
-    
-    plt.title(plot_title)
-    plt.xticks(np.arange(0, len(learning_rates)), labels_x)
-    plt.yticks(np.arange(0, len(momentums)), labels_y)
-    plt.xlabel("$Momentum$")
-    plt.ylabel("$\eta$")
-    #plt.yscale('log')
-    #plt.xscale('log')
-    plt.gcf().autofmt_xdate()
-    plt.imshow(mse_values, norm=LogNorm())
-    plt.colorbar()
-    plt.savefig(f"figures/{plot_title}")
-
-
-
-def grid_search_epochs(x, y, y_exact, plot_title, func, verbose = False):
-    batch_size = np.linspace(1,19,10, dtype='int')
-    epochs = np.linspace(10,190,10, dtype='int')
-
-    print(epochs)
-    print(batch_size)
-    mse_values = np.zeros((len(batch_size), len(epochs)))
-
-    for i, epoch in enumerate(epochs):
-        for j, M in enumerate(batch_size):
-            if func == SGD_Tuned or func == SGD:
-                xnew,y_tilde = func(x,y, Niterations=epoch, momentum=0.01, M=M, eta=0.1, plot=False)
-            else:
-                print("wrong function, will only work for SGD")
-                return 0
-            mse = MSE(y_exact, y_tilde)
-            mse_values[i, j] = mse
-
-            if verbose:
-                print(f"epoch:{epoch}, Batch size:{M} gives mse {mse}")
-
-    def array_elements_to_string(arr):
-        new_arr = []
-
-        for element in arr:
-            new_arr.append(str(element))
-        
-        return new_arr
-    
-    def show_values_in_heatmap(heatmap, axes, text_color = "white"):
-        for i in range(len(heatmap)):
-            for j in range(len(heatmap[0])):
-                axes.text(j, i, np.round(heatmap[i, j], 2), ha="center", va="center", color=text_color)
-
-    labels_x = array_elements_to_string(batch_size)
-    labels_y = array_elements_to_string(epochs)
-
-    plt.figure()
-    show_values_in_heatmap(mse_values, plt.gca())
-    
-    plt.title(plot_title)
-    plt.xticks(np.arange(0, len(batch_size)), labels_x)
-    plt.yticks(np.arange(0, len(epochs)), labels_y)
-    plt.xlabel("Batch size")
-    plt.ylabel("$iterations$")
-    #plt.yscale('log')
-    #plt.xscale('log')
-    plt.gcf().autofmt_xdate()
-    plt.imshow(mse_values, norm=LogNorm())
-    plt.colorbar()
-    plt.savefig(f"figures/{plot_title}")
-
-
-def grid_search_Ridge(x, y, y_exact, plot_title, func, verbose = False):
-    lambdas = np.logspace(-5,1,7)
-    epochs = np.linspace(10,190,7, dtype='int')
-
-    print(epochs)
-    mse_values = np.zeros((len(lambdas), len(epochs)))
-
-    for i, epoch in enumerate(epochs):
-        for j, lmd in enumerate(lambdas):
-            if func == SGD_Ridge:
-                xnew,y_tilde = func(x,y, Niterations=epoch, momentum=0.01, M=5, eta=0.1, lmbda=lmd, plot=False)
-            else:
-                print("wrong function, will only work for SGD_Ridge")
-                return 0
-            mse = MSE(y_exact, y_tilde)
-            mse_values[i, j] = mse
-
-            if verbose:
-                print(f"epoch:{epoch}, Lambda :{lmd} gives mse {mse}")
-
-    def array_elements_to_string(arr):
-        new_arr = []
-
-        for element in arr:
-            new_arr.append(str(element))
-        
-        return new_arr
-    
-    def show_values_in_heatmap(heatmap, axes, text_color = "white"):
-        for i in range(len(heatmap)):
-            for j in range(len(heatmap[0])):
-                axes.text(j, i, np.round(heatmap[i, j], 2), ha="center", va="center", color=text_color)
-
-    labels_x = array_elements_to_string(lambdas)
-    labels_y = array_elements_to_string(epochs)
-
-    plt.figure()
-    show_values_in_heatmap(mse_values, plt.gca())
-    
-    plt.title(plot_title)
-    plt.xticks(np.arange(0, len(lambdas)), labels_x)
-    plt.yticks(np.arange(0, len(epochs)), labels_y)
-    plt.xlabel("$\lambda$")
-    plt.ylabel("$iterations$")
-    #plt.yscale('log')
-    #plt.xscale('log')
-    plt.gcf().autofmt_xdate()
-    plt.imshow(mse_values, norm=LogNorm())
-    plt.colorbar()
-    plt.savefig(f"figures/{plot_title}")
-
-
-def epochs_plot(X, y, y_exact, layers, plot_title, max_epochs, lmda, eta, func, verbose = False):
-    mse_values = np.zeros(max_epochs)
-
-    for epoch in range(max_epochs):
-        if verbose:
-            print(f"Testing epoch {epoch}")
-    
-    plt.figure()
-    plt.title(plot_title)
-    plt.plot(mse_values)
-    plt.xlabel("Epoch")
-    plt.ylabel("MSE")
-    plt.savefig(f"figures/{plot_title}")
-
-
-
+from grid_search import *
 
 if __name__ == "__main__":
     n = 100 
@@ -225,7 +48,6 @@ if __name__ == "__main__":
             plt.legend()
         plt.savefig("figures/taskA3_batchsize.png")
         
-
         fig = plt.figure()
         plt.plot(x,y,'ro')
         plt.plot(x_exact,y_exact, 'k--', label="y_exact", zorder=100)
@@ -236,13 +58,10 @@ if __name__ == "__main__":
         plt.savefig("figures/taskA3_momentum.png")
 
     #Task A.5 - testing momentum and learning rates
-    #grid_search_hyperparameters(x,y,y_exact,"SGD with tuning (momentum and learning rates)", SGD_Tuned, verbose=True)
-    #grid_search_hyperparameters(x,y,y_exact,"SGD without tuning (momentum and learning rates)", SGD, verbose=True)
-    #grid_search_hyperparameters(x,y,y_exact,"GD with tuning (momentum and learning rates)", GD_Tuned, verbose=True)
-    #grid_search_hyperparameters(x,y,y_exact,"GD without tuning  (momentum and learning rates)", GD, verbose=True)
-    #grid_search_epochs(x,y,y_exact,"SGD without tuning (epochs and batchsize)", SGD, verbose=True)
-    #grid_search_epochs(x,y,y_exact,"SGD with tuning (epochs and batchsize)", SGD_Tuned, verbose=True)
-    #grid_search_Ridge(x,y,y_exact,"SGD with Ridge (epochs and lambda)", SGD_Ridge, verbose=True)
-
-
-
+    grid_search_hyperparameters_SGD(x,y,y_exact,"SGD with tuning (momentum and learning rates)", SGD_Tuned, verbose=True)
+    grid_search_hyperparameters_SGD(x,y,y_exact,"SGD without tuning (momentum and learning rates)", SGD, verbose=True)
+    grid_search_hyperparameters_SGD(x,y,y_exact,"GD with tuning (momentum and learning rates)", GD_Tuned, verbose=True)
+    grid_search_hyperparameters_SGD(x,y,y_exact,"GD without tuning  (momentum and learning rates)", GD, verbose=True)
+    grid_search_hyperparameters_SGD_epochs(x,y,y_exact,"SGD without tuning (epochs and batchsize)", SGD, verbose=True)
+    grid_search_hyperparameters_SGD_epochs(x,y,y_exact,"SGD with tuning (epochs and batchsize)", SGD_Tuned, verbose=True)
+    grid_search_hyperparameters_ridge(x,y,y_exact,"SGD with Ridge (epochs and lambda)", SGD_Ridge, verbose=True)

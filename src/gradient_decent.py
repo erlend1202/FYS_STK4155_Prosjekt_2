@@ -1,9 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 from autograd import grad 
-
-def MSE(y,yp):
-    return np.sum((y- yp)**2)/len(y)
+from mean_square_error import MSE
 
 #Simple Gradient descent with momentum
 def gradient_descent(x,y,iterations = 1000, lr = 0.01, threshold = 0.000001, momentum=0.1):
