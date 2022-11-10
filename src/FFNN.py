@@ -9,10 +9,6 @@ from design_matrix import *
 def learning_schedule(t, t0, t1):
     return t0/(t+t1)
 
-def accuracy_score_numpy(Y_test, Y_pred):
-    return np.sum(Y_test == Y_pred) / len(Y_test)
-
-
 class FeedForwardNeuralNetwork:
     def __init__(self, X, Y, layers, n_categories = 1, batch_size = 5, eta = 0.1, lmbda = 0.0, epochs = 10, func=sigmoid, problem="regression"):
         self.X = X
@@ -29,7 +25,6 @@ class FeedForwardNeuralNetwork:
         self.lmbda = lmbda
         self.layers = layers 
         self.num_layers = len(layers)
-
 
         #for eta
         self.t0, self.t1 = 5, 50
@@ -179,53 +174,11 @@ class FeedForwardNeuralNetwork:
                 self.feed_forward()
                 self.backpropagation()
 
-def grid_search_hyperparameters(X_train, X_test, y_train, y_test, layers, plot_title, func, n_categories = 1, batch_size = 5, epochs = 5, eta_vals = np.logspace(-5, 1, 7), lmd_vals = np.logspace(-5, 1, 7), verbose = False):
-
-    mse_values = np.zeros((len(eta_vals), len(lmd_vals)))
-
-    for i, eta in enumerate(eta_vals):
-        for j, lmd in enumerate(lmd_vals):
-            nn = FeedForwardNeuralNetwork(X_train, y_train, layers, n_categories, batch_size, epochs = epochs, eta = eta, lmbda = lmd, func = func)
-            nn.train()
-            y_tilde = nn.predict_probabilities(X_test)
-            mse = MSE(y_test, y_tilde)
-            mse_values[i, j] = mse
-
-            if verbose:
-                print(f"eta:{eta}, lambda:{lmd} gives mse {mse}")
-
-    def array_elements_to_string(arr):
-        new_arr = []
-
-        for element in arr:
-            new_arr.append(str(element))
-        
-        return new_arr
-    
-    def show_values_in_heatmap(heatmap, axes, text_color = "white"):
-        for i in range(len(heatmap)):
-            for j in range(len(heatmap[0])):
-                axes.text(j, i, np.round(heatmap[i, j], 2), ha="center", va="center", color=text_color)
-
-    labels_x = array_elements_to_string(eta_vals)
-    labels_y = array_elements_to_string(lmd_vals)
-
-    plt.figure()
-    show_values_in_heatmap(mse_values, plt.gca())
-    plt.title(plot_title)
-    plt.xticks(np.arange(0, len(eta_vals)), labels_x)
-    plt.yticks(np.arange(0, len(lmd_vals)), labels_y)
-    plt.xlabel("$\lambda$")
-    plt.ylabel("$\eta$")
-    plt.imshow(mse_values, norm=LogNorm())
-    plt.colorbar()
-    plt.savefig(f"figures/{plot_title}")
-
 def epochs_plot(X, y, y_exact, layers, plot_title, max_epochs, lmda, eta, func, verbose = False):
     mse_values = np.zeros(max_epochs)
 
     for epoch in range(max_epochs):
-        nn = FeedForwardNeuralNetwork(X, y, layers, 1, 10, epochs=epoch, eta=eta, lmbda=lmda)
+        nn = FeedForwardNeuralNetwork(X, y, layers, 1, 10, epochs=epoch, eta=eta, lmbda=lmda, func=func)
         nn.train()
         mse_values[epoch] = MSE(y_exact, nn.predict_probabilities(X))
         if verbose:
@@ -237,41 +190,3 @@ def epochs_plot(X, y, y_exact, layers, plot_title, max_epochs, lmda, eta, func, 
     plt.xlabel("Epoch")
     plt.ylabel("MSE")
     plt.savefig(f"figures/{plot_title}")
-"""
-
-if __name__ == "__main__":
-    n = 100
-    np.random.seed(40)
-
-    x = np.linspace(0, 1, n)
-    x = x.reshape(n, 1)
-    X = create_design_matrix(x,1)
-
-    y_exact = 4 + 3*x + x ** 2 
-    noise = np.random.normal(0, 0.1, n).reshape(n, 1)
-    y = y_exact + noise
-
-    layers = [3, 5, 3]
-    
-    grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy (Leaky RELU)", leaky_relu)
-    epochs_plot(X, y, y_exact, layers, "Epochs (Leaky RELU)", 200, 0.01, 0.01, leaky_relu)
-
-    grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy (sigmoid)", sigmoid)
-    epochs_plot(X, y, y_exact, layers, "Epochs (sigmoid)", 200, 0.01, 0.01, sigmoid)
-
-    grid_search_hyperparameters(X, y, y_exact, layers, "Training accuracy (RELU)", relu)
-    epochs_plot(X, y, y_exact, layers, "Epochs (RELU)", 200, 0.01, 0.01, relu)
-   
-    test_classification()
-    nn = FeedForwardNeuralNetwork(X, y, layers, 1, 10, epochs=1000, eta=0.01, lmbda=0.00001, func=sigmoid)
-    nn.train()
-
-    plt.figure()
-    plt.plot(x, y_exact, label="Exact")
-    plt.plot(x, nn.predict_probabilities(X), label="Prediction")
-    plt.savefig("figures/FFNN prediction")
-    plt.legend()
-    plt.show()
-
-
-"""

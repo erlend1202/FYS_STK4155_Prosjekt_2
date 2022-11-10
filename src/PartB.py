@@ -5,6 +5,7 @@ from design_matrix import create_design_matrix
 from sklearn.model_selection import train_test_split
 from mean_square_error import MSE
 from activation_functions import * 
+from grid_search import grid_search_hyperparameters
 
 if __name__ == "__main__":
 
