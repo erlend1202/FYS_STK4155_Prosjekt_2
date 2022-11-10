@@ -56,5 +56,6 @@ if __name__ == "__main__":
     acc = accuracy_score(Y_test, Y_predict, conf=True)
     print(acc)
     
-    grid_search_hyperparameters_log_reg(X_train, X_test, Y_train, Y_test, "Training_accuracy_Logistic", verbose=True)
-    epochs_plot("Epochs_Logistic", 200, verbose=True)
+    #grid_search_hyperparameters_log_reg(X_train, X_test, Y_train, Y_test, "Training_accuracy_Logistic", verbose=True)
+    #epochs_plot("Epochs_Logistic", 200, verbose=True)
+    grid_search_hyperparameters_scikit(X_train, X_test, Y_train, Y_test, "Training accuracy logreg (scikit)", verbose=True)
