@@ -1,8 +1,11 @@
 from SGD import *
 from matplotlib.colors import LogNorm
 from grid_search import *
+from sample_data import *
 
 if __name__ == "__main__":
+
+    """
     n = 100 
     np.random.seed(4)
     x = np.random.rand(n,1)
@@ -19,9 +22,11 @@ if __name__ == "__main__":
     #plt.plot(x_exact, y_exact)
     #plt.plot(xnew,y_pred)
     #plt.show()
-    
     #SGD_Ridge(x,y, 200, 0.1, 5, lmbda=1)
-    
+    """
+    x, y, z = create_data_samples(DataSamplesType.TEST)
+    z = z.ravel()
+
     #Task A.3
     def testSGD():
 
@@ -58,10 +63,10 @@ if __name__ == "__main__":
         plt.savefig("figures/taskA3_momentum.png")
 
     #Task A.5 - testing momentum and learning rates
-    grid_search_hyperparameters_SGD(x,y,y_exact,"SGD with tuning (momentum and learning rates)", SGD_Tuned, verbose=True)
-    grid_search_hyperparameters_SGD(x,y,y_exact,"SGD without tuning (momentum and learning rates)", SGD, verbose=True)
-    grid_search_hyperparameters_SGD(x,y,y_exact,"GD with tuning (momentum and learning rates)", GD_Tuned, verbose=True)
-    grid_search_hyperparameters_SGD(x,y,y_exact,"GD without tuning  (momentum and learning rates)", GD, verbose=True)
-    #grid_search_hyperparameters_SGD_epochs(x,y,y_exact,"SGD without tuning (epochs and batchsize)", SGD, verbose=True)
-    #grid_search_hyperparameters_SGD_epochs(x,y,y_exact,"SGD with tuning (epochs and batchsize)", SGD_Tuned, verbose=True)
-    #grid_search_hyperparameters_ridge(x,y,y_exact,"SGD with Ridge (epochs and lambda)", SGD_Ridge, verbose=True)
+    grid_search_hyperparameters_SGD(x,y,z,"SGD with tuning (momentum and learning rates)", SGD_Tuned, verbose=True)
+    grid_search_hyperparameters_SGD(x,y,z,"SGD without tuning (momentum and learning rates)", SGD, verbose=True)
+    grid_search_hyperparameters_SGD(x,y,z,"GD with tuning (momentum and learning rates)", GD_Tuned, verbose=True)
+    grid_search_hyperparameters_SGD(x,y,z,"GD without tuning  (momentum and learning rates)", GD, verbose=True)
+    grid_search_hyperparameters_SGD_epochs(x,y,z,"SGD without tuning (epochs and batchsize)", SGD, verbose=True)
+    grid_search_hyperparameters_SGD_epochs(x,y,z,"SGD with tuning (epochs and batchsize)", SGD_Tuned, verbose=True)
+    grid_search_hyperparameters_ridge(x,y,z,"SGD with Ridge (epochs and lambda)", SGD_Ridge, verbose=True)

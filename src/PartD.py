@@ -3,6 +3,7 @@ from FFNN import *
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
+<<<<<<< HEAD
 from accuracy_score import accuracy_score
 
 # one-hot in numpy
@@ -16,6 +17,11 @@ def to_categorical_numpy(integer_vector):
 
 
 
+=======
+from to_categorical import to_categorical
+from accuracy_score import accuracy_score
+from grid_search import *
+>>>>>>> fe4530bba054fe328eadbad7bc47d602d719c7f7
 #For eta and lambda
 #Best seems to be eta=1, lmbda = 0.0001
 def grid_search_hyperparameters(plot_title, layers=[10], func=sigmoid, eta_vals = np.logspace(-5, 1, 7), lmd_vals = np.logspace(-5, 1, 7), verbose = False):
@@ -28,7 +34,7 @@ def grid_search_hyperparameters(plot_title, layers=[10], func=sigmoid, eta_vals 
                                                     test_size=test_size)
     acc_values = np.zeros((len(eta_vals), len(lmd_vals)))
     
-    Y_train = to_categorical_numpy(Y_train)
+    Y_train = to_categorical(Y_train)
     for i, eta in enumerate(eta_vals):
         for j, lmd in enumerate(lmd_vals):
             nn = FeedForwardNeuralNetwork(X_train, Y_train, layers, 2, batch_size=5, epochs=10, eta=eta, lmbda=lmd, func=func, problem="classification")
@@ -85,7 +91,7 @@ def grid_search_layers(plot_title, func=sigmoid, verbose = False, sc=False):
     acc_values = np.zeros((len(num_layers), len(size_layers)))
     
     if not sc:
-        Y_train = to_categorical_numpy(Y_train)
+        Y_train = to_categorical(Y_train)
 
     for i, num in enumerate(num_layers):
         for j, size in enumerate(size_layers):
@@ -135,11 +141,16 @@ def grid_search_layers(plot_title, func=sigmoid, verbose = False, sc=False):
 
 
 if __name__ == "__main__": 
-    # Kjøre for flere hyperparametere eta, lambda
+    # Representing the hidden layers in the neural network
     layers = [10]
+
+    # Loading breast cancer dataset
     data = load_breast_cancer()
     X = data.data
     Y = data.target
+
+
+    # Splitting data in train / test
     train_size = 0.8
     test_size = 1 - train_size
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, train_size=train_size,
@@ -167,3 +178,11 @@ if __name__ == "__main__":
     #grid_search_layers("Prediction accuracy different layers (leaky_relu)", func=leaky_relu, verbose=True)
 
     #grid_search_layers("Prediction accuracy different layers (scikit)", func=leaky_relu, verbose=True, sc=True)
+    
+    #Mathias din del
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, train_size=train_size, test_size=test_size)
+    Y_train = to_categorical(Y_train)
+
+    # Creating plots
+    grid_search_hyperparameters_NN_classification(X_train, X_test, Y_train, Y_test, "Prediction accuracy (sigmoid)", func = sigmoid, verbose = True)
+    grid_search_layers(X_train, X_test, Y_train, Y_test, "Prediction accuracy different layers (sigmoid)", func = sigmoid, verbose = True)
