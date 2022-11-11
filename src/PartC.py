@@ -19,8 +19,8 @@ if __name__ == "__main__":
     y_pred = nn.predict_probabilities(X_test)
     print(MSE(y_test, y_pred))
     
-    grid_search_hyperparameters_NN(X_train, X_test, y_train, y_test, layers, "Training accuracy (RELU)", relu, verbose=True)
+    #grid_search_hyperparameters_NN(X_train, X_test, y_train, y_test, layers, "Training accuracy (RELU)", relu, verbose=True)
     #epochs_plot(X_train, y_train, y_train, layers, "Epochs (RELU)", 50, 0.01, 0.01, relu)
     
-    grid_search_hyperparameters_NN(X_train, X_test, y_train, y_test, layers, "Training accuracy (Leaky RELU)", leaky_relu, verbose=True)
+    #grid_search_hyperparameters_NN(X_train, X_test, y_train, y_test, layers, "Training accuracy (Leaky RELU)", leaky_relu, verbose=True)
     #epochs_plot(X, y_train, y_train, layers, "Epochs (Leaky RELU)", 50, 0.01, 0.01, leaky_relu)

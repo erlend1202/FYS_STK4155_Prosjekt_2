@@ -3,7 +3,7 @@ from FFNN import *
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
-
+from accuracy_score import accuracy_score
 
 # one-hot in numpy
 def to_categorical_numpy(integer_vector):
@@ -34,7 +34,7 @@ def grid_search_hyperparameters(plot_title, layers=[10], func=sigmoid, eta_vals 
             nn = FeedForwardNeuralNetwork(X_train, Y_train, layers, 2, batch_size=5, epochs=10, eta=eta, lmbda=lmd, func=func, problem="classification")
             nn.train()
             Y_predict = nn.predict(X_test)
-            acc = accuracy_score_numpy(Y_test, Y_predict)
+            acc = accuracy_score(Y_test, Y_predict)
 
             acc_values[i, j] = acc
 
@@ -99,7 +99,7 @@ def grid_search_layers(plot_title, func=sigmoid, verbose = False, sc=False):
                 nn.train()
                 Y_predict = nn.predict(X_test)
             
-            acc = accuracy_score_numpy(Y_test, Y_predict)
+            acc = accuracy_score(Y_test, Y_predict)
             acc_values[i, j] = acc
 
             if verbose:
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     test_size = 1 - train_size
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, train_size=train_size,
                                                     test_size=test_size)
-    #Y_train = to_categorical_numpy(Y_train)
+    Y_train = to_categorical_numpy(Y_train)
     
     #mlp = MLPClassifier(hidden_layer_sizes=(8,8,8), activation='relu', solver='adam', max_iter=500)
     #mlp.fit(X_train,Y_train)
@@ -152,10 +152,10 @@ if __name__ == "__main__":
     #print(accuracy_score_numpy(Y_test, Y_predict))
 
     #Important to change n_categories to 2 and problem to anything else than regression
-    #nn = FeedForwardNeuralNetwork(X_train, Y_train, layers, 2, 5, epochs=10, eta=1, lmbda=0.001, func=sigmoid, problem="classification")
-    #nn.train()
-    #Y_predict = nn.predict(X_test)
-    #print(accuracy_score_numpy(Y_test, Y_predict))
+    nn = FeedForwardNeuralNetwork(X_train, Y_train, layers, 2, 5, epochs=100, eta=1, lmbda=0.001, func=sigmoid, problem="classification")
+    nn.train()
+    Y_predict = nn.predict(X_test)
+    print(accuracy_score(Y_test, Y_predict))
 
     #grid_search_hyperparameters("Prediction accuracy (sigmoid)", func=sigmoid, verbose=True)
     #grid_search_layers("Prediction accuracy different layers (sigmoid)", func=sigmoid, verbose=True)
@@ -166,4 +166,4 @@ if __name__ == "__main__":
     #grid_search_hyperparameters("Prediction accuracy (leaky_relu)", func=leaky_relu, verbose=True)
     #grid_search_layers("Prediction accuracy different layers (leaky_relu)", func=leaky_relu, verbose=True)
 
-    grid_search_layers("Prediction accuracy different layers (scikit)", func=leaky_relu, verbose=True, sc=True)
+    #grid_search_layers("Prediction accuracy different layers (scikit)", func=leaky_relu, verbose=True, sc=True)
