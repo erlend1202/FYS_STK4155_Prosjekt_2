@@ -158,6 +158,7 @@ def GD_Tuned(x,y,z,Niterations, momentum, eta=0.1, plot=True):
 
 #Added AdaGrad
 def SGD_Tuned(x,y,z, Niterations, momentum, M=5, eta=0.1, plot=True):
+    #n = len(x.ravel())
     n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
     #X = create_design_matrix_1D(x,2)
@@ -204,8 +205,9 @@ def SGD_Tuned(x,y,z, Niterations, momentum, M=5, eta=0.1, plot=True):
     xnew = np.linspace(0,1,n)
     Xnew = create_design_matrix_1D(xnew,2)
     Xnew = create_design_matrix(x, y, 2)
-    ypredict = Xnew.dot(theta)
-    
+    print(Xnew.shape, theta.shape, z.shape)
+    #ypredict = Xnew.dot(theta)
+    ypredict = Xnew @ theta
 
     if plot:
         xnew = np.linspace(0,2,n)
