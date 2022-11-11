@@ -26,7 +26,6 @@ if __name__ == "__main__":
     # Making plots
     grid_search_hyperparameters_NN(X_train, X_test, y_train, y_test, layers, "Training accuracy (sigmoid)", sigmoid, verbose=True)
     epochs_plot_NN(X_train, y_train, y_train, layers, "Epochs (sigmoid)", 50, 0.01, 0.01, sigmoid)
-    
 
     # Training neural network with the train data and calculating MSE from both test and train data
     nn = FeedForwardNeuralNetwork(X_train, y_train, layers, 1, 10, epochs=200, eta=0.01, lmbda=0.01)
