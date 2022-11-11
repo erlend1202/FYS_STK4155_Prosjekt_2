@@ -14,7 +14,6 @@ if __name__ == "__main__":
     data = load_breast_cancer()
     X = data.data
     Y = data.target
-
     
     # Splitting data in train / test
     train_size = 0.8

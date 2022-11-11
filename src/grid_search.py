@@ -93,7 +93,7 @@ def grid_search_hyperparameters_SGD_epochs(x, y, y_exact, plot_title, func, batc
     
     create_logarithmic_heatmap_plot(plot_title, "$Batch size$", "$Epochs$", mse_values, batch_size, epochs, True)
 
-def grid_search_hyperparameters_SGD(x, y, z, plot_title, func, verbose = False):
+def grid_search_hyperparameters_SGD(x, y, z, plot_title, func, verbose = False, value_text_in_cells = True):
     """
     Doing a grid seach over the learning rate and the momentum in with the SGD algorithm. Then creating a heatmap with the different MSE results for each learning rate and momentum.
 
@@ -116,6 +116,9 @@ def grid_search_hyperparameters_SGD(x, y, z, plot_title, func, verbose = False):
     if func == GD:
         learning_rates = np.logspace(-5,-1,5)
         momentums = np.logspace(-5,-1,5)
+    elif func == SGD:
+        momentums = np.logspace(-5,1,7)
+        learning_rates = np.logspace(-5,1,3)
     else:
         learning_rates = np.logspace(-5,1,7)
         momentums = np.logspace(-5,1,7)
@@ -133,7 +136,7 @@ def grid_search_hyperparameters_SGD(x, y, z, plot_title, func, verbose = False):
             if verbose:
                 print(f"eta:{eta}, momentum:{mom} gives mse {mse}")
 
-    create_logarithmic_heatmap_plot(plot_title, "$Momentum$", "$\eta$", mse_values, learning_rates, momentums, True)
+    create_logarithmic_heatmap_plot(plot_title, "$Momentum$", "$\eta$", mse_values, learning_rates, momentums, value_text_in_cells=value_text_in_cells)
     plt.gcf().autofmt_xdate()
 
 def grid_search_hyperparameters_log_reg(X_train, X_test, Y_train, Y_test, plot_title, M = 10, epochs = 100, eta_vals = np.logspace(-5, 1, 7), lmd_vals = np.logspace(-5, 1, 7), verbose = False):

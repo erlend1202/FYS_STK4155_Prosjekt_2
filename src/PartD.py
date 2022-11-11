@@ -3,25 +3,10 @@ from FFNN import *
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
-<<<<<<< HEAD
-from accuracy_score import accuracy_score
-
-# one-hot in numpy
-def to_categorical_numpy(integer_vector):
-    n_inputs = len(integer_vector)
-    n_categories = np.max(integer_vector) + 1
-    onehot_vector = np.zeros((n_inputs, n_categories))
-    onehot_vector[range(n_inputs), integer_vector] = 1
-    
-    return onehot_vector
-
-
-
-=======
 from to_categorical import to_categorical
 from accuracy_score import accuracy_score
 from grid_search import *
->>>>>>> fe4530bba054fe328eadbad7bc47d602d719c7f7
+
 #For eta and lambda
 #Best seems to be eta=1, lmbda = 0.0001
 def grid_search_hyperparameters(plot_title, layers=[10], func=sigmoid, eta_vals = np.logspace(-5, 1, 7), lmd_vals = np.logspace(-5, 1, 7), verbose = False):
@@ -153,9 +138,8 @@ if __name__ == "__main__":
     # Splitting data in train / test
     train_size = 0.8
     test_size = 1 - train_size
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, train_size=train_size,
-                                                    test_size=test_size)
-    Y_train = to_categorical_numpy(Y_train)
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, train_size=train_size, test_size=test_size)
+    Y_train = to_categorical(Y_train)
     
     #mlp = MLPClassifier(hidden_layer_sizes=(8,8,8), activation='relu', solver='adam', max_iter=500)
     #mlp.fit(X_train,Y_train)
@@ -184,5 +168,5 @@ if __name__ == "__main__":
     Y_train = to_categorical(Y_train)
 
     # Creating plots
-    grid_search_hyperparameters_NN_classification(X_train, X_test, Y_train, Y_test, "Prediction accuracy (sigmoid)", func = sigmoid, verbose = True)
-    grid_search_layers(X_train, X_test, Y_train, Y_test, "Prediction accuracy different layers (sigmoid)", func = sigmoid, verbose = True)
+    grid_search_hyperparameters_NN_classification(X_train, X_test, Y_train, Y_test, "Prediction accuracy (sigmoid) classification", func = sigmoid, verbose = True)
+    grid_search_layers(X_train, X_test, Y_train, Y_test, "Prediction accuracy different layers (sigmoid) classification", func = sigmoid, verbose = True)

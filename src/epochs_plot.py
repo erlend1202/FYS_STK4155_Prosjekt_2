@@ -42,6 +42,7 @@ def epochs_plot_NN(X, y, y_exact, layers, plot_title, max_epochs, lmda, eta, fun
     plt.xlabel("Epoch")
     plt.ylabel("MSE")
     plt.savefig(f"figures/{plot_title}")
+    print(mse_values)
 
 def epochs_plot_log_reg(X_train, X_test, Y_train, Y_test, plot_title, max_epochs, lmda=0.01, eta=0.1, increment = 5, verbose = False):
     """
