@@ -22,4 +22,4 @@ def leaky_relu(z):
     return a 
 
 def delta_leaky_relu(z):
-    return np.where(z > 0, 1, 0.01*z)
+    return np.where(z > 0, 1, 0.01)
