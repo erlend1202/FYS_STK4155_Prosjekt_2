@@ -16,7 +16,8 @@ def learning_schedule(t):
     return t0/(t+t1)
 
 def GD(x,y,z,Niterations, momentum, eta=0.1, plot=True):
-    n = len(x)
+    n = len(x.ravel())
+    #n = len(x)
     #X = np.c_[np.ones((n,1)), x, x**2]
     X = create_design_matrix(x, y, 2)
 
@@ -55,7 +56,7 @@ def GD(x,y,z,Niterations, momentum, eta=0.1, plot=True):
 
 
 def SGD(x,y,z,Niterations, momentum, M, eta=0.1, plot=True):
-    n = len(x)
+    n = len(x.ravel())
     #X = np.c_[np.ones((n,1)), x, x**2]
     #X = create_design_matrix_1D(x,2)
     X = create_design_matrix(x, y, 2)
@@ -104,7 +105,8 @@ def SGD(x,y,z,Niterations, momentum, M, eta=0.1, plot=True):
 
 #Added AdaGrad
 def GD_Tuned(x,y,z,Niterations, momentum, eta=0.1, plot=True):
-    n = len(x)
+    n = len(x.ravel())
+
     #X = np.c_[np.ones((n,1)), x, x**2]
     #X = create_design_matrix_1D(x,2)
     X = create_design_matrix(x, y, 2)
@@ -158,8 +160,8 @@ def GD_Tuned(x,y,z,Niterations, momentum, eta=0.1, plot=True):
 
 #Added AdaGrad
 def SGD_Tuned(x,y,z, Niterations, momentum, M=5, eta=0.1, plot=True):
-    #n = len(x.ravel())
-    n = len(x)
+    n = len(x.ravel())
+
     #X = np.c_[np.ones((n,1)), x, x**2]
     #X = create_design_matrix_1D(x,2)
     X = create_design_matrix(x, y, 2)
@@ -205,7 +207,6 @@ def SGD_Tuned(x,y,z, Niterations, momentum, M=5, eta=0.1, plot=True):
     xnew = np.linspace(0,1,n)
     Xnew = create_design_matrix_1D(xnew,2)
     Xnew = create_design_matrix(x, y, 2)
-    print(Xnew.shape, theta.shape, z.shape)
     #ypredict = Xnew.dot(theta)
     ypredict = Xnew @ theta
 
@@ -228,11 +229,11 @@ def SGD_Tuned(x,y,z, Niterations, momentum, M=5, eta=0.1, plot=True):
 
 #Added AdaGrad
 def SGD_Ridge(x,y,z, Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
-    n = len(x)
+    n = len(x.ravel())
+
     #X = np.c_[np.ones((n,1)), x, x**2]
     #X = create_design_matrix_1D(x,2)
     X = create_design_matrix(x, y, 2)
-    y = z
 
     sh = X.shape[1]
 
@@ -253,7 +254,8 @@ def SGD_Ridge(x,y,z, Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
         for i in range(m):
             random_index = np.random.randint(m)*M
             xi = X[random_index:random_index+M]
-            yi = y[random_index:random_index+M]
+            yi = z[random_index:random_index+M]
+            yi = yi.reshape(len(yi),1)
             #Changing eta over time
             eta = learning_schedule(iter*m+i)
 
@@ -277,7 +279,9 @@ def SGD_Ridge(x,y,z, Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
 
     xnew = np.linspace(0,1,n)
     Xnew = create_design_matrix_1D(xnew,2)
-    ypredict = Xnew.dot(theta)
+    Xnew = create_design_matrix(x, y, 2)
+    #ypredict = Xnew.dot(theta)
+    ypredict = Xnew @ theta
 
     if plot:
             
@@ -295,8 +299,6 @@ def SGD_Ridge(x,y,z, Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
     else:
         return xnew,ypredict
         
-    #testSGD()
-    #Best values: Momentum = 0.1, batch size = 5, iterations = 200-1000 seems suitable enough
 
 def test_tuning(x,y, z, x_exact, y_exact):
     fig, axs = plt.subplots(2,2)

@@ -12,7 +12,7 @@ from accuracy_score import accuracy_score
 from logarithmic_heatmap_plot import create_logarithmic_heatmap_plot
 from sklearn.linear_model import LogisticRegression
 
-def grid_search_hyperparameters_ridge(x, y, y_exact, plot_title, func, lambdas = np.logspace(-5,1,7), epochs = np.linspace(10,190,7, dtype='int'), verbose = False):
+def grid_search_hyperparameters_ridge(x, y, z, plot_title, func, lambdas = np.logspace(-5,1,7), epochs = np.linspace(10,190,7, dtype='int'), verbose = False):
     """
     Doing a grid search over epochs and the lambdas in ridge regression. Then creating a heatmap with the different MSE results for each lambas and epochs. 
 
@@ -40,11 +40,11 @@ def grid_search_hyperparameters_ridge(x, y, y_exact, plot_title, func, lambdas =
     for i, epoch in enumerate(epochs):
         for j, lmd in enumerate(lambdas):
             if func == SGD_Ridge:
-                xnew,y_tilde = func(x,y, Niterations=epoch, momentum=0.01, M=5, eta=0.1, lmbda=lmd, plot=False)
+                xnew,y_tilde = func(x,y,z, Niterations=epoch, momentum=0.01, M=5, eta=0.1, lmbda=lmd, plot=False)
             else:
                 print("wrong function, will only work for SGD_Ridge")
                 return 0
-            mse = MSE(y_exact, y_tilde)
+            mse = MSE(z, y_tilde)
             mse_values[i, j] = mse
 
             if verbose:
@@ -52,7 +52,7 @@ def grid_search_hyperparameters_ridge(x, y, y_exact, plot_title, func, lambdas =
     
     create_logarithmic_heatmap_plot(plot_title, "$\lambda$", "$Epochs$", mse_values, epochs, lambdas, True)
 
-def grid_search_hyperparameters_SGD_epochs(x, y, y_exact, plot_title, func, batch_size = np.linspace(1, 19, 10, dtype='int'), epochs = np.linspace(10, 190, 10, dtype='int'), verbose = False):
+def grid_search_hyperparameters_SGD_epochs(x, y, z, plot_title, func, batch_size = np.linspace(1, 19, 10, dtype='int'), epochs = np.linspace(10, 190, 10, dtype='int'), verbose = False):
     """
     Doing a grid seach over batch size and epochs in with the SGD algorithm. Then creating a heatmap with the different MSE results for each batch size and epochs.
 
@@ -81,11 +81,11 @@ def grid_search_hyperparameters_SGD_epochs(x, y, y_exact, plot_title, func, batc
     for i, epoch in enumerate(epochs):
         for j, M in enumerate(batch_size):
             if func == SGD_Tuned or func == SGD:
-                xnew, y_tilde = func(x,y, Niterations=epoch, momentum=0.01, M=M, eta=0.1, plot=False)
+                xnew, y_tilde = func(x,y,z, Niterations=epoch, momentum=0.01, M=M, eta=0.1, plot=False)
             else:
                 print("wrong function, will only work for SGD")
                 return 0
-            mse = MSE(y_exact, y_tilde)
+            mse = MSE(z, y_tilde)
             mse_values[i, j] = mse
 
             if verbose:
@@ -113,6 +113,7 @@ def grid_search_hyperparameters_SGD(x, y, z, plot_title, func, verbose = False, 
         Defaults to false. If true, each value produces for each iteration will be printed to the console. 
     """
 
+    """    
     if func == GD:
         learning_rates = np.logspace(-5,-1,5)
         momentums = np.logspace(-5,-1,5)
@@ -121,7 +122,10 @@ def grid_search_hyperparameters_SGD(x, y, z, plot_title, func, verbose = False, 
         learning_rates = np.logspace(-5,1,3)
     else:
         learning_rates = np.logspace(-5,1,7)
-        momentums = np.logspace(-5,1,7)
+        momentums = np.logspace(-5,1,7)"""
+
+    learning_rates = np.logspace(-5,1,7)
+    momentums = np.logspace(-5,1,7)
     mse_values = np.zeros((len(momentums), len(learning_rates)))
 
     for i, mom in enumerate(momentums):
@@ -131,7 +135,10 @@ def grid_search_hyperparameters_SGD(x, y, z, plot_title, func, verbose = False, 
             else:
                 xnew,y_tilde = func(x, y, z, Niterations=20, momentum=mom, eta=eta, plot=False)
             mse = MSE(z, y_tilde)
-            mse_values[i, j] = mse
+            if mse > 5000:
+                mse_values[i, j] = None 
+            else:
+                mse_values[i,j] = mse
 
             if verbose:
                 print(f"eta:{eta}, momentum:{mom} gives mse {mse}")

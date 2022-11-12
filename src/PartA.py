@@ -26,9 +26,9 @@ if __name__ == "__main__":
     """
     x, y, z = create_data_samples(DataSamplesType.TEST)
     z = z.ravel()
-    xnew,z_pred = SGD_Tuned(x,y,z, 100, 0.1,5,0.1, False)
-    print(z.shape, z_pred.shape)
-    print(MSE(z, z_pred))
+    #xnew,z_pred = SGD_Tuned(x,y,z, 100, 0.1,5,0.1, False)
+    #print(z.shape, z_pred.shape)
+    #print(MSE(z, z_pred))
 
     #Task A.3
     def testSGD():
@@ -73,9 +73,11 @@ if __name__ == "__main__":
 
     #Task A.5 - testing momentum and learning rates
     #grid_search_hyperparameters_SGD(x,y,z,"SGD with tuning (momentum and learning rates)", SGD_Tuned, verbose=True)
-    grid_search_hyperparameters_SGD(x,y,z,"SGD without tuning (momentum and learning rates)", SGD, verbose=True)
-    grid_search_hyperparameters_SGD(x,y,z,"GD with tuning (momentum and learning rates)", GD_Tuned, verbose=True)
-    grid_search_hyperparameters_SGD(x,y,z,"GD without tuning  (momentum and learning rates)", GD, verbose=True, value_text_in_cells=False)
-    grid_search_hyperparameters_SGD_epochs(x,y,z,"SGD without tuning (epochs and batchsize)", SGD, verbose=True)
-    grid_search_hyperparameters_SGD_epochs(x,y,z,"SGD with tuning (epochs and batchsize)", SGD_Tuned, verbose=True)
-    grid_search_hyperparameters_ridge(x,y,z,"SGD with Ridge (epochs and lambda)", SGD_Ridge, verbose=True)
+    #grid_search_hyperparameters_SGD(x,y,z,"SGD without tuning (momentum and learning rates)", SGD, verbose=True)
+    #grid_search_hyperparameters_SGD(x,y,z,"GD with tuning (momentum and learning rates)", GD_Tuned, verbose=True)
+    
+    #grid_search_hyperparameters_SGD(x,y,z,"GD without tuning  (momentum and learning rates)", GD, verbose=True, value_text_in_cells=True)
+    
+    #grid_search_hyperparameters_SGD_epochs(x,y,z,"SGD without tuning (epochs and batchsize)", SGD, verbose=True)
+    #grid_search_hyperparameters_SGD_epochs(x,y,z,"SGD with tuning (epochs and batchsize)", SGD_Tuned, verbose=True)
+    #grid_search_hyperparameters_ridge(x,y,z,"SGD with Ridge (epochs and lambda)", SGD_Ridge, verbose=True)
