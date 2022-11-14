@@ -7,9 +7,6 @@ from activation_functions import *
 from to_categorical import *
 from accuracy_score import *
 
-def learning_schedule(t,t0,t1):
-    return t0/(t+t1)
-
 class NumpyLogReg:
 
     def fit(self, X, y, eta = 0.1, epochs=10, M=5, lmbda=0.1):
@@ -31,7 +28,7 @@ class NumpyLogReg:
                 xi = X[random_index:random_index+M]
                 yi = y[random_index:random_index+M]
                 #Changing eta over time
-                eta = learning_schedule(iter*m+i, self.t0, self.t1)
+                eta = self.learning_schedule(iter*m+i)
 
                 gradients = eta / k *  xi.T @ (self.forward(xi) - yi) + lmbda*change 
 
@@ -40,6 +37,9 @@ class NumpyLogReg:
 
         self.weights = weights
             
+    def learning_schedule(self, t):
+        return self.t0/(t+self.t1)
+
     def forward(self, X):
         return sigmoid(X @ self.weights)
     
