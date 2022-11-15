@@ -3,8 +3,25 @@ import matplotlib.pyplot as plt
 from autograd import grad 
 from mean_square_error import MSE
 
-#Simple Gradient descent with momentum
 def gradient_descent(x,y,iterations = 1000, lr = 0.01, threshold = 0.000001, momentum=0.1):
+    """
+        Simple gradient decent with momentum. Plots the results.
+        
+        Parameters
+        ----------
+        x: np.array
+            X input data
+        y: np.array
+            Y input data
+        iterations: int
+            Number of iterations to run the gradient decent algorithm. Defaults to 1000.
+        lr: float
+            The learning rate in the gradient decent algorithm. Defaults to 0.01.
+        threshold: float
+            Stops iterating if the change in cost is less than the threshold parameter. Defaults to 0.000001.
+        momentum: float
+            Optimizes the gradient decent algorithm. Builds momentum in one direction to prevent oscillations of noisy gradients. Defaults to 0.1.
+    """
     n = len(x)
     w = np.random.random()
     bias = 0.01
@@ -51,6 +68,22 @@ This is for the specific seed, and could vary
 
 #Method for a varying step length/learning rate
 def step_length(t,t0,t1):
+    """
+        Method for a varying step length/learning rate.
+
+        Parameters
+        ----------
+        t: float
+            Variable that variates the step length. 
+        t0: float
+            Constant from the method used. 
+        t1: float
+            Constant from the method used. 
+        Returns
+        -------
+        float
+            Step length
+    """
     return t0/(t+t1)
 
 
@@ -61,6 +94,24 @@ def CostOLS(y,X,theta):
 #training_gradient = grad(CostOLS,2)
 
 def StocastichGD(x,y,iterations = 1000, t0 = 30, t1=10, threshold = 0.000001, momentum=0.1, M=5):
+    """
+        A stochastic gradient decent algorithm.
+        
+        Parameters
+        ----------
+        x: np.array
+            X input data
+        y: np.array
+            Y input data
+        iterations: int
+            Number of iterations to run the gradient decent algorithm. Defaults to 1000.
+        lr: float
+            The learning rate in the gradient decent algorithm. Defaults to 0.01.
+        threshold: float
+            Stops iterating if the change in cost is less than the threshold parameter. Defaults to 0.000001.
+        momentum: float
+            Optimizes the gradient decent algorithm. Builds momentum in one direction to prevent oscillations of noisy gradients. Defaults to 0.1.
+    """
     n = len(x)
     w = np.random.random()
     bias = 0.01
@@ -113,28 +164,64 @@ def StocastichGD(x,y,iterations = 1000, t0 = 30, t1=10, threshold = 0.000001, mo
     plt.show()
 
 
-n = 100
-np.random.seed(4) #Place seed here aswell for more accurate results
-x = 2*np.random.rand(n,1)
-y = 4+3*x+np.random.randn(n,1)
-StocastichGD(x,y,momentum=0.5)
-
-
-
-
-
-
-
-# objective function
 def objective(x):
+    """
+        Objective function
+        
+        Parameters
+        ----------
+        x: float
+            x input value
+        
+        Returns
+        -------
+        float
+            Objective function return value
+
+    """
     return x**2.0 
  
-# derivative of objective function
-def derivative(x):
+def objective_derivative(x):
+    """
+        Objective function derivative
+        
+        Parameters
+        ----------
+        x: float
+            x input value
+        
+        Returns
+        -------
+        float
+            Objective function derivative return value
+
+    """
     return x * 2.0 
 
-# gradient descent algorithm with momentum
-def gradient_descentMomentum(objective, derivative, bounds, n_iter, step_size, momentum):
+def gradient_descent_momentum(objective, derivative, bounds, n_iter, step_size, momentum):
+    """
+        Gradient decent with momentum
+
+        Parameters
+        ----------
+        objective: function
+            The objective function to be used
+        derivative: function
+            The derivative of the objective function
+        n_iter: int
+            Number of iterations to run the gradient decent algorithm. 
+        step_size: int
+            The magnitude of the step on each gradient per iteration. 
+        momentum: float
+            Optimizes the gradient decent algorithm. Builds momentum in one direction to prevent oscillations of noisy gradients. Defaults to 0.1.
+        
+        Returns
+        -------
+            array
+                Solutions array
+            array 
+                Scores array
+    """
     # track all solutions
     solutions, scores = list(), list()
     # generate an initial point
@@ -166,6 +253,9 @@ def gradient_descentMomentum(objective, derivative, bounds, n_iter, step_size, m
     return [solutions, scores]
 
 def test_basicGD():
+    """
+        Test function for testing basic gradient descent. Plotting the results.
+    """
     # seed the pseudo random number generator
     np.random.seed(4)
     # define range for input
@@ -177,7 +267,7 @@ def test_basicGD():
     # define momentum
     momentum = 0.10
     # perform the gradient descent search
-    solutions, scores = gradient_descentMomentum(objective, derivative, bounds, n_iter, step_size, momentum)
+    solutions, scores = gradient_descent_momentum(objective, objective_derivative, bounds, n_iter, step_size, momentum)
     # sample input range uniformly at 0.1 increments
     inputs = np.arange(bounds[0,0], bounds[0,1]+0.1, 0.1)
     # compute targets
@@ -190,8 +280,13 @@ def test_basicGD():
     plt.show()
 
 #test_basicGD()
-"""
-Convergene takes 16 iterations for learning rate 0.25, but when we 
-add momentum of 0.3, it takes 18 iterations. Changing momentum down to
-0.1 got the iterations down to 10, which is best possible result we could see.
-"""
+#Convergene takes 16 iterations for learning rate 0.25, but when we 
+#add momentum of 0.3, it takes 18 iterations. Changing momentum down to
+#0.1 got the iterations down to 10, which is best possible result we could see.
+
+if __name__ == "__main__":
+    n = 100
+    np.random.seed(4) #Place seed here aswell for more accurate results
+    x = 2*np.random.rand(n,1)
+    y = 4+3*x+np.random.randn(n,1)
+    StocastichGD(x,y,momentum=0.5)
