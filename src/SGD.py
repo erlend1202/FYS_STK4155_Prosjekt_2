@@ -16,9 +16,27 @@ def learning_schedule(t):
     return t0/(t+t1)
 
 def GD(x,y,z,Niterations, momentum, eta=0.1, plot=True):
+    """
+        Simple gradient decent with momentum. Optional to plot the results.
+        
+        Parameters
+        ----------
+        x: np.array
+            X input data from franke function
+        y: np.array
+            Y input data from franke function
+        z: np.array
+            z input data from franke function
+        Niterations: int
+            Number of iterations to run the gradient decent algorithm.
+        momentum: float
+            Optimizes the gradient decent algorithm. Builds momentum in one direction to prevent oscillations of noisy gradients.
+        eta: float
+            The eta parameter the model should use.
+        plot: boolean
+            Plot the results. If this is false, the result are returned instead.
+    """
     n = len(x.ravel())
-    #n = len(x)
-    #X = np.c_[np.ones((n,1)), x, x**2]
     X = create_design_matrix(x, y, 2)
 
     sh = X.shape[1]
@@ -26,9 +44,11 @@ def GD(x,y,z,Niterations, momentum, eta=0.1, plot=True):
     XT_X = X.T @ X
 
     theta = np.random.randn(sh,1)
+
     # define the gradient
     training_gradient = grad(CostOLS)
     change = 0
+
     for iter in range(Niterations):
         gradients = training_gradient(theta,z,X) + momentum*change
         #eta = learning_schedule(iter)
@@ -56,9 +76,29 @@ def GD(x,y,z,Niterations, momentum, eta=0.1, plot=True):
 
 
 def SGD(x,y,z,Niterations, momentum, M, eta=0.1, plot=True):
+    """
+        Simple stochastic gradient decent with momentum. Optional to plot the results.
+        
+        Parameters
+        ----------
+        x: np.array
+            X input data from franke function
+        y: np.array
+            Y input data from franke function
+        z: np.array
+            z input data from franke function
+        Niterations: int
+            Number of iterations to run the gradient decent algorithm.
+        momentum: float
+            Optimizes the gradient decent algorithm. Builds momentum in one direction to prevent oscillations of noisy gradients.
+        eta: float
+            The eta parameter the model should use.
+        plot: boolean
+            Plot the results. If this is false, the result are returned instead.
+        M: float
+            The m parameter the model should use
+    """
     n = len(x.ravel())
-    #X = np.c_[np.ones((n,1)), x, x**2]
-    #X = create_design_matrix_1D(x,2)
     X = create_design_matrix(x, y, 2)
     y = z
 
@@ -67,6 +107,7 @@ def SGD(x,y,z,Niterations, momentum, M, eta=0.1, plot=True):
     sh = X.shape[1]
     
     theta = np.random.randn(sh,1)
+
     # define the gradient
     training_gradient = grad(CostOLS)
     change = 0
@@ -102,9 +143,27 @@ def SGD(x,y,z,Niterations, momentum, M, eta=0.1, plot=True):
         return xnew,ypredict
 
 
-
-#Added AdaGrad
 def GD_Tuned(x,y,z,Niterations, momentum, eta=0.1, plot=True):
+    """
+        Simple gradient decent with momentum. Tuned with AdaGrad Optional to plot the results.
+        
+        Parameters
+        ----------
+        x: np.array
+            X input data from franke function
+        y: np.array
+            Y input data from franke function
+        z: np.array
+            z input data from franke function
+        Niterations: int
+            Number of iterations to run the gradient decent algorithm.
+        momentum: float
+            Optimizes the gradient decent algorithm. Builds momentum in one direction to prevent oscillations of noisy gradients.
+        eta: float
+            The eta parameter the model should use.
+        plot: boolean
+            Plot the results. If this is false, the result are returned instead.
+    """
     n = len(x.ravel())
 
     #X = np.c_[np.ones((n,1)), x, x**2]
@@ -158,8 +217,29 @@ def GD_Tuned(x,y,z,Niterations, momentum, eta=0.1, plot=True):
     else:
         return xnew,ypredict
 
-#Added AdaGrad
 def SGD_Tuned(x,y,z, Niterations, momentum, M=5, eta=0.1, plot=True):
+    """
+        Stochastic gradient decent with momentum. Tuned with AdaGrad. Optional to plot the results.
+        
+        Parameters
+        ----------
+        x: np.array
+            X input data from franke function
+        y: np.array
+            Y input data from franke function
+        z: np.array
+            z input data from franke function
+        Niterations: int
+            Number of iterations to run the gradient decent algorithm.
+        momentum: float
+            Optimizes the gradient decent algorithm. Builds momentum in one direction to prevent oscillations of noisy gradients.
+        eta: float
+            The eta parameter the model should use.
+        plot: boolean
+            Plot the results. If this is false, the result are returned instead.
+        M: float
+            The m parameter the model should use
+    """
     n = len(x.ravel())
 
     #X = np.c_[np.ones((n,1)), x, x**2]
@@ -229,25 +309,45 @@ def SGD_Tuned(x,y,z, Niterations, momentum, M=5, eta=0.1, plot=True):
 
 #Added AdaGrad
 def SGD_Ridge(x,y,z, Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
+    """
+        Stochastic gradient decent of ridge regression. Tuned with AdaGrad. Optional to plot the results.
+        
+        Parameters
+        ----------
+        x: np.array
+            X input data from franke function
+        y: np.array
+            Y input data from franke function
+        z: np.array
+            z input data from franke function
+        Niterations: int
+            Number of iterations to run the gradient decent algorithm.
+        momentum: float
+            Optimizes the gradient decent algorithm. Builds momentum in one direction to prevent oscillations of noisy gradients.
+        eta: float
+            The eta parameter the model should use.
+        lnbda: float
+            The lambda parameter the model should use.
+        plot: boolean
+            Plot the results. If this is false, the result are returned instead.
+        M: float
+            The m parameter the model should use
+    """
     n = len(x.ravel())
-
-    #X = np.c_[np.ones((n,1)), x, x**2]
-    #X = create_design_matrix_1D(x,2)
     X = create_design_matrix(x, y, 2)
 
     sh = X.shape[1]
 
     
     theta = np.random.randn(sh,1)
+
     # Including AdaGrad parameter to avoid possible division by zero
     delta  = 1e-8
-    # define the gradient
 
     # Value for parameter rho
     rho = 0.99
     change = 0
     m = int(n/M)
-    
 
     for iter in range(Niterations):
         Giter = np.zeros(shape=(sh,sh))
@@ -280,7 +380,6 @@ def SGD_Ridge(x,y,z, Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
     xnew = np.linspace(0,1,n)
     Xnew = create_design_matrix_1D(xnew,2)
     Xnew = create_design_matrix(x, y, 2)
-    #ypredict = Xnew.dot(theta)
     ypredict = Xnew @ theta
 
     if plot:
@@ -289,7 +388,6 @@ def SGD_Ridge(x,y,z, Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
         Xnew = create_design_matrix_1D(xnew,2)
         ypredict = Xnew.dot(theta)
         plt.plot(xnew, ypredict, "r-")
-        #plt.plot(xnew, ypredict2, "b-")
         plt.plot(x, y ,'ro')
         plt.axis([0,2.0,0, 15.0])
         plt.xlabel(r'$x$')
@@ -298,33 +396,3 @@ def SGD_Ridge(x,y,z, Niterations, momentum, M, eta=0.1, lmbda=0, plot=True):
         plt.show()
     else:
         return xnew,ypredict
-        
-
-def test_tuning(x,y, z, x_exact, y_exact):
-    fig, axs = plt.subplots(2,2)
-    functions = [GD, GD_Tuned, SGD, SGD_Tuned]
-    count = 0
-    for i in range(2):
-        for j in range(2):
-            function = functions[count]
-            count += 1
-            if function == SGD or function == SGD_Tuned:
-                xnew, ypred = function(x,y, 200, 0.1, 5, plot=False)
-            else:
-                xnew, ypred = function(x,y, 1000, 0.1, plot=False)
-            axs[i,j].plot(x,y,'r.')
-            axs[i,j].plot(x_exact,y_exact, 'k--', label="y_exact", zorder=100)
-            axs[i,j].plot(xnew, ypred, label=f"{function.__name__}")
-            axs[i,j].legend()
-            print(MSE(ypred, y_exact))
-    #plt.savefig("figures/A4_OneTuned.png")
-    plt.savefig("figures/testing.png")
-    
-    plt.show()
-
-    #test_tuning(x,y)
-
-#COMMENTS FOR OVERLEAF
-"""
--when testing ridge MSE vs OLS MSE we got that OLS had an MSE of 3.5 while Ridge got an MSE of 5.7.
-"""

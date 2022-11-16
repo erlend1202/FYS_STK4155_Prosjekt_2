@@ -262,7 +262,7 @@ def grid_search_hyperparameters_NN_classification(X_train, X_test, Y_train, Y_te
         Defaults to false. If true, each value produces for each iteration will be printed to the console. 
     """
     acc_values = np.zeros((len(eta_vals), len(lmd_vals)))
-    Y_train = to_categorical(Y_train)
+    #Y_train = to_categorical(Y_train.T).T
     for i, eta in enumerate(eta_vals):
         for j, lmd in enumerate(lmd_vals):
             nn = FeedForwardNeuralNetwork(X_train, Y_train, layers, 2, batch_size=5, epochs=10, eta=eta, lmbda=lmd, func=func, problem="classification")

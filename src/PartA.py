@@ -5,32 +5,9 @@ from sample_data import *
 
 if __name__ == "__main__":
 
-    """
-    n = 100 
-    np.random.seed(4)
-    x = np.random.rand(n,1)
-    y = 4+3*x + x**2 +np.random.randn(n,1)
-
-    x_exact = np.linspace(0,1,n)
-    y_exact = 4+3*x_exact + x_exact**2
-    #y = 2.0+3*x +4*x*x# +np.random.randn(n,1)
-    t0, t1 = 5, 50
-    #GD(x,y, 1000, 0.1)
-    #test_tuning(x,y,x_exact,y_exact)
-    #xnew, y_pred = SGD_Tuned(x,y, 200, 0.1, 5, plot=False)
-    #print(MSE(y_pred, y_exact))
-    #plt.plot(x_exact, y_exact)
-    #plt.plot(xnew,y_pred)
-    #plt.show()
-    #SGD_Ridge(x,y, 200, 0.1, 5, lmbda=1)
-    """
     x, y, z = create_data_samples(DataSamplesType.TEST)
     z = z.ravel()
-    #xnew,z_pred = SGD_Tuned(x,y,z, 100, 0.1,5,0.1, False)
-    #print(z.shape, z_pred.shape)
-    #print(MSE(z, z_pred))
 
-    #Task A.3
     def testSGD():
         n = 100 
         np.random.seed(4)
@@ -71,13 +48,12 @@ if __name__ == "__main__":
             plt.legend()
         plt.savefig("figures/taskA3_momentum.png")
 
-    #Task A.5 - testing momentum and learning rates
-    #grid_search_hyperparameters_SGD(x,y,z,"SGD with tuning (momentum and learning rates)", SGD_Tuned, verbose=True)
-    #grid_search_hyperparameters_SGD(x,y,z,"SGD without tuning (momentum and learning rates)", SGD, verbose=True)
-    #grid_search_hyperparameters_SGD(x,y,z,"GD with tuning (momentum and learning rates)", GD_Tuned, verbose=True)
+    grid_search_hyperparameters_SGD(x,y,z,"SGD with tuning (momentum and learning rates)", SGD_Tuned, verbose=True)
+    grid_search_hyperparameters_SGD(x,y,z,"SGD without tuning (momentum and learning rates)", SGD, verbose=True)
+    grid_search_hyperparameters_SGD(x,y,z,"GD with tuning (momentum and learning rates)", GD_Tuned, verbose=True)
     
-    #grid_search_hyperparameters_SGD(x,y,z,"GD without tuning  (momentum and learning rates)", GD, verbose=True, value_text_in_cells=True)
+    grid_search_hyperparameters_SGD(x,y,z,"GD without tuning  (momentum and learning rates)", GD, verbose=True, value_text_in_cells=True)
     
-    #grid_search_hyperparameters_SGD_epochs(x,y,z,"SGD without tuning (epochs and batchsize)", SGD, verbose=True)
-    #grid_search_hyperparameters_SGD_epochs(x,y,z,"SGD with tuning (epochs and batchsize)", SGD_Tuned, verbose=True)
-    #grid_search_hyperparameters_ridge(x,y,z,"SGD with Ridge (epochs and lambda)", SGD_Ridge, verbose=True)
+    grid_search_hyperparameters_SGD_epochs(x,y,z,"SGD without tuning (epochs and batchsize)", SGD, verbose=True)
+    grid_search_hyperparameters_SGD_epochs(x,y,z,"SGD with tuning (epochs and batchsize)", SGD_Tuned, verbose=True)
+    grid_search_hyperparameters_ridge(x,y,z,"SGD with Ridge (epochs and lambda)", SGD_Ridge, verbose=True)

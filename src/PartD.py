@@ -141,10 +141,9 @@ if __name__ == "__main__":
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, train_size=train_size, test_size=test_size)
     Y_train = to_categorical(Y_train)
     
-    #mlp = MLPClassifier(hidden_layer_sizes=(8,8,8), activation='relu', solver='adam', max_iter=500)
-    #mlp.fit(X_train,Y_train)
-    #Y_predict = mlp.predict(X_test)
-    #print(accuracy_score_numpy(Y_test, Y_predict))
+    mlp = MLPClassifier(hidden_layer_sizes=(8,8,8), activation='relu', solver='adam', max_iter=500)
+    mlp.fit(X_train,Y_train)
+    Y_predict = mlp.predict(X_test)
 
     #Important to change n_categories to 2 and problem to anything else than regression
     nn = FeedForwardNeuralNetwork(X_train, Y_train, layers, 2, 5, epochs=100, eta=1, lmbda=0.001, func=sigmoid, problem="classification")
@@ -152,18 +151,17 @@ if __name__ == "__main__":
     Y_predict = nn.predict(X_test)
     print(accuracy_score(Y_test, Y_predict))
 
-    #grid_search_hyperparameters("Prediction accuracy (sigmoid)", func=sigmoid, verbose=True)
-    #grid_search_layers("Prediction accuracy different layers (sigmoid)", func=sigmoid, verbose=True)
+    grid_search_hyperparameters("Prediction accuracy (sigmoid)", func=sigmoid, verbose=True)
+    grid_search_layers("Prediction accuracy different layers (sigmoid)", func=sigmoid, verbose=True)
 
-    #grid_search_hyperparameters("Prediction accuracy (relu)", func=relu, verbose=True)
-    #grid_search_layers("Prediction accuracy different layers (relu)", func=relu, verbose=True)
+    grid_search_hyperparameters("Prediction accuracy (relu)", func=relu, verbose=True)
+    grid_search_layers("Prediction accuracy different layers (relu)", func=relu, verbose=True)
 
-    #grid_search_hyperparameters("Prediction accuracy (leaky_relu)", func=leaky_relu, verbose=True)
-    #grid_search_layers("Prediction accuracy different layers (leaky_relu)", func=leaky_relu, verbose=True)
+    grid_search_hyperparameters("Prediction accuracy (leaky_relu)", func=leaky_relu, verbose=True)
+    grid_search_layers("Prediction accuracy different layers (leaky_relu)", func=leaky_relu, verbose=True)
 
-    #grid_search_layers("Prediction accuracy different layers (scikit)", func=leaky_relu, verbose=True, sc=True)
-    
-    #Mathias din del
+    grid_search_layers("Prediction accuracy different layers (scikit)", func=leaky_relu, verbose=True, sc=True)
+
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, train_size=train_size, test_size=test_size)
     Y_train = to_categorical(Y_train)
 
