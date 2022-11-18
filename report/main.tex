@@ -112,7 +112,7 @@ In this project we will build a \textit{feed forward neural network} (FFNN) that
 \\
 
 % At the end of the introduction you should give a brief summary of the structure of the report
-First, we will introduce the theory and methods we have utilized in section \ref{sec:METHODS}. We will then explain how we have implemented this information to create our FFNN in section \ref{sec:IMPLEMENTATION}. Our results will be presented and discussed in section \ref{sec:DISCUSSION}. We will then have an overall conclusion in section \ref{sec:CONCLUSION}, where we also suggest further work.
+First, we will introduce the theory and methods we have utilized in section \ref{sec:METHODS}. We will then explain how we have implemented our FFNN in section \ref{sec:IMPLEMENTATION}. Our results will be presented and discussed in section \ref{sec:DISCUSSION}. We will then have an overall conclusion in section \ref{sec:CONCLUSION}, where we also suggest further work.
 % Er det for mye å ha tre avsnitt i introduksjonen? Kan eventuelt slå dem sammen. 
 \section{THEORY AND METHODS}
 \label{sec:METHODS}
@@ -127,9 +127,7 @@ One such method is \textit{momentum gradient descent}. In momentum gradient desc
 \begin{align}
     x_{k+1} = x_{k} - (\gamma \nabla f(x_{k}) + momentum * \Delta x)
 \end{align}
-This can reduce the effect of sudden fluctuations or noise in the function, while also boosting the speed of the descent in directions with persistent gradients [Hjorth-Jensen (\ref{ref:Morten}), sec. 7.8], thus increasing the speed of the optimization process. % Litt usikker på akkurat dette. 
-% mer om momentum, slides uke 39
-%Ser bra ut for meg -Erlend
+This can reduce the effect of sudden fluctuations or noise in the function, while also boosting the speed of the descent in directions with persistent gradients [Hjorth-Jensen (\ref{ref:Morten}), sec. 7.8], thus increasing the speed of the optimization process.
 \\
 Another method of making the GD method less computationally expensive is to approximate the gradient using only a subset of the data. % Formel?
 By dividing the data set into smaller batches, called \textit{mini-batches}, and calculating the gradient using randomly chosen mini-batches, the number of calculations is reduced, while also introducing randomness, thus reducing the probability of our optimization process getting stuck in local minima or saddle points. % Gjelder dette og for saddle points eller kun lokale minima?
@@ -243,9 +241,14 @@ As stated earlier, we will use MSE to test the accuracy of our models when the p
 
 \subsection{Feed Forward Neural Network}
 As stated in our introduction, the point of an artificial neural network was to mimic the human brain. The method of doing this is to make a large network with multiple ''neurons'', which in this case will be what we will call a \textit{hidden node}. The network works by taking in a certain amount of information as what we call \textit{input nodes}, and running them through the networks multiple \textit{hidden layers}, which consists of a set amount of hidden nodes. For each layer we run the output through an \textit{activation function}, until we eventually end up with the output layer, which will give us the prediction from the network.
-
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/FFNN_illustration.png}
+%    \caption{Visual representation of a neural network.}
+%    \label{fig:1}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/FFNN_illustration.png}
-\caption{Visual representation of a neural network.}
+\caption{Figure 1: Visual representation of a neural network.}
 
 This is the first step for the neural network, and is what we call the \textit{feed forward} method, which can be written with these equations:
 
@@ -308,40 +311,81 @@ It contains 569 samples with data about several different attributes of tumor ca
 \\
 \\
 The data we use for testing our regression problems is the \textit{Franke function}, which is a $2$-dimensional function (see Appendix \ref{eq:FrankeFunction}), and is often used to train networks for regression problems due to its complexity. 
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Franke.png}
+%    \caption{Visual representation of the Franke function using $x,y \in [0,1]$.}
+%    \label{fig:2}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Franke.png}
-\caption{Visual representation of the Franke function using $x,y \in [0,1]$.}
+\caption{Figure 2: Visual representation of the Franke function using $x,y \in [0,1]$.}
 
 \section{RESULTS AND DISCUSSION}\label{sec:DISCUSSION}
 As stated earlier, we want to look at both GD and SGD, with and without a tuning of the learning rate. 
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/A4_OneTuned.png}
+%    \caption{Plot of GD and SGD with and without tuning the learning rate, approximating the function $f(x) = x^2 + 3x + 4$.}
+%    \label{fig:3}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/A4_OneTuned.png}
-\caption{Plot of GD and SGD with and without tuning the learning rate, approximating the function $f(x) = x^2 + 3x + 4$.}
+\caption{Figure 3: Plot of GD and SGD with and without tuning the learning rate, approximating the function $f(x) = x^2 + 3x + 4$.}
 \\
 \\
 Here we used a set learning rate of $0.1$ with 200 iterations, with a momentum of 0.1 and a batch size of 5 for the stocastich variants. These parameters were found when testing our models, and seemed to be the best options. We clearly observe that both SGD with and without tuning perform better than a standard GD, even with tuning. It is also clear that the SGD with learning rate tuning performs better than without, giving us a result that is near perfectly aligned with the actual result. It is therefore safe to say that tuning the learning rate as we run through the iterations is a good way to optimize our solution. The only problem we could run into with such a good approximation, is over-fitting, which means that our trained model works well on a certain problem, but not well in general. We also tested the OLS implementation vs the Ridge implementation for SGD with a tuned learning rate, and got a MSE of $0.0271$ for OLS and $0.6629$ for Ridge. This seems to indicate that Ridge is far worse than OLS, but this could also be due to the function we have chosen to use, and we will therefore look more into this later on.
 \\
 \\
 We now want to compare these models with our neural network. We first look at how our network approximates the same function as used for GD and SGD.
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/FFNN prediction.png}
+%    \caption{Plot our neural network approximating the function $f(x) = x^2 + 3x + 4$}
+%    \label{fig:4}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/FFNN prediction.png}
-\caption{Plot our neural network approximating the function $f(x) = x^2 + 3x + 4$}
+\caption{Figure 4: Plot of our neural network approximating the function $f(x) = x^2 + 3x + 4$}
 \\
 Here we used the same hyperparameters as we used for gradient descent, with layer sizes $3,5,3$. We see a more complex output here, not as linear as the predictions made from gradient descent. This is to be expected since we used the sigmoid activation function, which will turn the problem from a linear problem to a complex one. Even though our nerual network in this example seems to be outperformed by the multiple gradient descent variants, we can again think of over-fitting. With our neural network here, it makes a general assumption of the problem, which could in most cases be a a better model.
 \\
 To further study this we will look at a more complex function, the Franke function. Here we will test our models with a variety of values for the hyperparameters. The first we will look at are our SGD models for Ridge and OLS. We will run tests for multiple hyper parameters to get a better understanding of which parameters and models are the best. We will simulate the franke function using $x,y \in [0,1]$ with $100 \times 100$ data points each.
-
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/SGD with tuning (epochs and batchsize).png}
+%    \caption{Heatmap of our SGD model (with OLS) tested for multiple batchsizes and iterations (epochs) using the Franke function.}
+%    \label{fig:5}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/SGD with tuning (epochs and batchsize).png}
-\caption{Heatmap of our SGD model (with OLS) tested for multiple batchsizes and iterations (epochs) using the Franke function.}
+\caption{Figure 5: Heatmap of our SGD model (with OLS) tested for multiple batchsizes and iterations (epochs) using the Franke function.}
 We see here that the optimal values seem to be about 110 iterations and a batchsize of 5.
 
-
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/SGD with tuning (momentum and learning rates).png}
+%    \caption{Heatmap of our SGD model (with OLS) tested for multiple momentum and learning rate values using the Franke function.}
+%    \label{fig:6}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/SGD with tuning (momentum and learning rates).png}
-\caption{Heatmap of our SGD model (with OLS) tested for multiple momentum and learning rate values using the Franke function.}
+\caption{Figure 6: Heatmap of our SGD model (with OLS) tested for multiple momentum and learning rate values using the Franke function.} \\
+\\
 We see here that the optimal values seem to be a momentum of 0.01 and a learning rate of 1, however this could be good for this specific problem, and usually a high learning rate will not perform well for every problem, so setting the learning rate to 0.01 could be a good choice.
 
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/SGD with Ridge (epochs and lambda).png}
+%    \caption{Heatmap of our SGD model (with Ridge regression) for multiple values of $\lambda$ and iterations. Here we used the optimal values found from OLS to see the difference between the two.}
+%    \label{fig:7}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/SGD with Ridge (epochs and lambda).png}
-\caption{heatmap of our SGD model (with Ridge regression) for multiple values of $\lambda$ and iterations. Here we used the optimal values found from OLS to see the difference between the two.}
+\caption{Figure 7: Heatmap of our SGD model (with Ridge regression) for multiple values of $\lambda$ and iterations. Here we used the optimal values found from OLS to see the difference between the two.}
 
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/SGD without tuning (momentum and learning rates).png}
+%    \caption{Heatmap of our SGD model (with OLS, without tuning) tested for multiple momentum and learning rate values using the Franke function.}
+%    \label{fig:8}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/SGD without tuning (momentum and learning rates).png}
-\caption{heatmap of our SGD model (with OLS, without tuning) tested for multiple momentum and learning rate values using the Franke function.}
+\caption{Figure 8: Heatmap of our SGD model (with OLS, without tuning) tested for multiple momentum and learning rate values using the Franke function.}
 \\
 \\
 As we see on these heatmap plots, it seems that OLS definitely outperforms Ridge using the Franke function just as we saw with our second order equation. However, Ridge is faster computation wise, and as we see some of the better results on ridge are very close to being as good as the best results for OLS. So we with different parameters and different training data, ridge might outperform, but for our chosen data is seems that OLS is the better option. 
@@ -350,38 +394,71 @@ We also clearly see with our last heatmap, which is a headmap of SGD without tun
 \\
 \\
 We will now do the same simulation using our neural network. We start by using the sigmoid function and get the following result.
-
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Training accuracy (sigmoid).png}
+%    \caption{Heatmap of our neural network (using sigmoid) tested for multiple momentum and learning rate values using the Franke function. We used a set number of $100$ iterations and a batch size of $5$ to best compare with SGD.}
+%    \label{fig:9}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Training accuracy (sigmoid).png}
-\caption{heatmap of our neural network (using sigmoid) tested for multiple momentum and learning rate values using the Franke function. We used a set number of $100$ iterations and a batch size of $5$ to best compare with SGD.}
+\caption{Figure 9: Heatmap of our neural network (using sigmoid) tested for multiple momentum and learning rate values using the Franke function. We used a set number of $100$ iterations and a batch size of $5$ to best compare with SGD.}
 \\
 \\
 As we can see, our network seems to outperform SGD quite well. Its optimal solutions are a bit better, and it doesn't have nearly as high of a variance in its values as SGD did, with all of our neural networks MSE values being under $0.1$, while SGD had one as high as $0.55$, even with learning rate tuning.
 \\
 It seems to be safe to conclude that our neural network works better than all the other regression methods, both in optimality and stability. This can also be seen when studying the output after a set amount of epochs as seen bellow.
-
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Epochs (sigmoid).png}
+%    \caption{Plot of change in MSE when varying amount of epochs for our neural network using the sigmoid function.}
+%    \label{fig:10}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Epochs (sigmoid).png}
-\caption{Plot of change in MSE when varying amount of epochs for our neural network using the sigmoid function.}
+\caption{Figure 10: Plot of change in MSE when varying amount of epochs for our neural network using the sigmoid function.}
 \\
 \\
 Here we used a batch size of $5$ as usual to best compare. We clearly see after only few epochs that the neural network closes inn on an optimal value. It is also important to note that since we also use a stocastich method on our neural network, we will have two loops that we run through. The amount of epochs refers to the outmost loop, while the inner loop has a set amount depending on the size of the data set. This amount is calculated in the same way for our SGD implementation aswell as our neural network. Therefore we can clearly observe that our network learns fast, but we see a solid amount of fluctuation in our MSE values, not too different from what the heatmap of our SGD implementation showed. Therefore we can not conclude that our model is as stable as our heatmap might have made us believe. 
 \\
 \\
 We will now investigate how the different uses of activation functions impact the results from our neural network. As stated previously, we will use relu and leaky relu. We do the same simulations for these two as we did with sigmoid.
-
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Training accuracy (RELU).png}
+%    \caption{Heatmap of our neural network (using relu) tested for multiple momentum and learning rate values using the Franke function. We used same number of epochs and same batch size as with sigmoid}
+%    \label{fig:11}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Training accuracy (RELU).png}
-\caption{heatmap of our neural network (using relu) tested for multiple momentum and learning rate values using the Franke function. We used same number of epochs and same batch size as with sigmoid}
+\caption{Figure 11: Heatmap of our neural network (using relu) tested for multiple momentum and learning rate values using the Franke function. We used same number of epochs and same batch size as with sigmoid}
 
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Training accuracy (Leaky RELU).png}
+%    \caption{Heatmap of our neural network (using leaky relu) tested for multiple momentum and learning rate values using the Franke function. We used same number of epochs and same batch size as with sigmoid}
+%    \label{fig:12}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Training accuracy (Leaky RELU).png}
-\caption{heatmap of our neural network (using leaky relu) tested for multiple momentum and learning rate values using the Franke function. We used same number of epochs and same batch size as with sigmoid}
+\caption{Figure 12: Heatmap of our neural network (using leaky relu) tested for multiple momentum and learning rate values using the Franke function. We used same number of epochs and same batch size as with sigmoid}
 \\
 \\
 As we see on these heatmaps, relu and leaky relu definitely seem more unstable than sigmoid was, with the white spaces on the leaky relu plot representing MSE values converging. Just looking at these plots, it seems that sigmoid is clearly a better option. However, we will further investigate this by plotting the MSE for a different amount of epochs as we did with sigmoid. 
 
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Epochs (RELU).png}
+%    \caption{Plot of change in MSE when varying amount of epochs for our neural network using the relu function.}
+%    \label{fig:13}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Epochs (RELU).png}
-\caption{Plot of change in MSE when varying amount of epochs for our neural network using the relu function.}
+\caption{Figure 13: Plot of change in MSE when varying amount of epochs for our neural network using the relu function.}
 
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Epochs (Leaky RELU).png}
+%    \caption{Plot of change in MSE when varying amount of epochs for our neural network using the leaky relu function.}
+%    \label{fig:14}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Epochs (Leaky RELU).png}
-\caption{Plot of change in MSE when varying amount of epochs for our neural network using the leaky relu function.}
+\caption{Figure 14: Plot of change in MSE when varying amount of epochs for our neural network using the leaky relu function.}
 \\
 \\
 On these plots, including the heatmap, we clearly see the leaky relu function converging a lot, and only a few of the epochs give a good result. This could be due to the fact that leaky relu never returns a $0$ value in the derivative unless our input value is $0$. This means if the network starts to converge, our network will not be able to stop it by saturating the neurons like sigmoid and relu can. 
@@ -392,14 +469,32 @@ However looking at the epochs plot for relu, we see a more stable estimation tha
 \\
 We seem to have found the best contender for regression problems, being our neural network using either sigmoid or relu. We will therefore move on to classification problems, where we will compare with logistic regression. We start by simulating our breast cancer data set for our neural network, for every activation function.
 
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Prediction accuracy (sigmoid).png}
+%    \caption{Plot of change in accuracy when varying $\lambda$ (momentum) and learning rate for our neural network using sigmoid function.}
+%    \label{fig:15}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Prediction accuracy (sigmoid).png}
-\caption{Plot of change in accuracy when varying $\lambda$ (momentum) and learning rate for our neural network using sigmoid function.}
+\caption{Figure 15: Plot of change in accuracy when varying $\lambda$ (momentum) and learning rate for our neural network using sigmoid function.}
 
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Prediction accuracy (relu).png}
+%    \caption{Plot of change in accuracy when varying $\lambda$ (momentum) and learning rate for our neural network using relu function.}
+%    \label{fig:16}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Prediction accuracy (relu).png}
-\caption{Plot of change in accuracy when varying $\lambda$ (momentum) and learning rate for our neural network using relu function.}
+\caption{Figure 16: Plot of change in accuracy when varying $\lambda$ (momentum) and learning rate for our neural network using relu function.}
 
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Prediction accuracy (leaky_relu).png}
+%    \caption{Plot of change in accuracy when varying $\lambda$ (momentum) and learning rate for our neural network using the leaky relu function.}
+%    \label{fig:17}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Prediction accuracy (leaky_relu).png}
-\caption{Plot of change in accuracy when varying $\lambda$ (momentum) and learning rate for our neural network using the leaky relu function.}
+\caption{Figure 17: Plot of change in accuracy when varying $\lambda$ (momentum) and learning rate for our neural network using the leaky relu function.}
 \\
 \\
 These results are not very impressive. It seems as though our neural network does not handle either classification or the data set very well. We see this if we also make the confusion matrix. We do a simulation using the sigmoid function and get an accuracy of $67 \%$, which in theory is ok, but the confusion matrix we get is
@@ -409,11 +504,23 @@ These results are not very impressive. It seems as though our neural network doe
 \end{bmatrix}
 which shows us that the classifier only assigned points to one class. The cause of this could also be that the data set is too uneven, or that we were not able to find suitable parameters for our neural network. We now compare these results with sklearn's own neural network model, using different layer sizes.
 
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Prediction accuracy different layers (sigmoid).png}
+%    \caption{Plot of change in accuracy when varying the layer sizes and number of layers for our neural network using the sigmoid function.}
+%    \label{fig:18}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Prediction accuracy different layers (sigmoid).png}
-\caption{Plot of change in accuracy when varying the layer sizes and number of layers for our neural network using the sigmoid function.}
+\caption{Figure 18: Plot of change in accuracy when varying the layer sizes and number of layers for our neural network using the sigmoid function.}
 
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Prediction accuracy different layers (scikit).png}
+%    \caption{Plot of change in accuracy when varying the layer sizes and number of layers for scikits model using sigmoid function.}
+%    \label{fig:19}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Prediction accuracy different layers (scikit).png}
-\caption{Plot of change in accuracy when varying the layer sizes and number of layers for scikits model using sigmoid function.}
+\caption{Figure 19: Plot of change in accuracy when varying the layer sizes and number of layers for scikits model using sigmoid function.}
 \\
 \\
 Here we see the same pattern we were hoping not to get. It seems as though our neural network really does classify by assigning only one class. However, when studying the predictions done by scikit, we see a similar patter in accuracy. Even though the scikit model is able to give a very good prediction with $90 \%$ accuracy most of the time, we see that a lot of the layer choices gives the same accuracy that we got with our own network, or worse. This could indicate to us that our neural network predicts only one class because its an easy prediction due to the data set being uneven, and that if we did quite a bit more simulations we might end up with parameters that could give decent results.
@@ -421,11 +528,23 @@ Here we see the same pattern we were hoping not to get. It seems as though our n
 \\
 However, the last model we implemented was logistic regression. Here we have results from our own logistic regression and scikits logistic regression model.
 
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Training_accuracy_Logistic.png}
+%    \caption{Plot of change in accuracy for our logistic regression method when varying the learning rate ($\eta$) and the l2 regularization parameter $\lambda$.}
+%    \label{fig:20}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Training_accuracy_Logistic.png}
-\caption{Plot of change in accuracy for our logistic regression method when varying the learning rate ($\eta$) and the l2 regularization parameter $\lambda$.}
+\caption{Figure 20: Plot of change in accuracy for our logistic regression method when varying the learning rate ($\eta$) and the l2 regularization parameter $\lambda$.}
 
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Training accuracy logreg (scikit).png}
+%    \caption{Plot of change in accuracy for scikits logistic regression method when varying the number of iterations and the l2 regularization parameter $\lambda$.}
+%    \label{fig:21}
+%\end{figure}
 \includegraphics[width=0.45\textwidth]{FYS-STK/Prosjekt_2/Training accuracy logreg (scikit).png}
-\caption{Plot of change in accuracy for scikits logistic regression method when varying the number of iterations and the l2 regularization parameter $\lambda$.}
+\caption{Figure 21: Plot of change in accuracy for scikits logistic regression method when varying the number of iterations and the l2 regularization parameter $\lambda$.}
 \\
 \\
 As we see from these results, our logistic regression method is able to produce results about as good as scikits own neural network and scikits logistic regression. We also see here for $\lambda = 10$ that we get a pattern of predicting only one class, further adding to our suspicion that the data set is not balanced, but this could also just be because a $\lambda$ of 10 is so high that the model easily converges towards one single solution. We see however that our logistic regression is very stable at producing good results. This shows us that logistic regression is a very good method for classification, and seems to be the best one out of the models we implemented, at least for these data sets.
